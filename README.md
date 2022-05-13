@@ -10,7 +10,7 @@ This CCO uses the STM32 DMA2D
 
 ## UI Pack Compatibility
 
-It is compatible with the UI-pack [13.0.0-13.1.0[.
+It is compatible with the UI-pack [13.1.0-14.0.0[.
 
 ## Images Compatibility
 
@@ -35,7 +35,7 @@ The functions `DRAWING_DMA2D_configure_memcpy()` and `DRAWING_DMA2D_start_memcpy
 
 Add the following line to your `module.ivy`:
 
-    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="1.0.8"/>
+    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="2.0.0"/>
     
 ## Initialization
 

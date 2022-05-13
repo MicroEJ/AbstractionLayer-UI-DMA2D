@@ -9,7 +9,7 @@
  * @file
  * @brief Use STM32 DMA2D (ChromART) for MicroEJ ui_drawing.h implementation.
  * @author MicroEJ Developer Team
- * @version 1.0.8
+ * @version 2.0.0
  * @date 13 May 2022
  */
 
@@ -196,7 +196,7 @@ void DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcpy_data) {
 DRAWING_Status UI_DRAWING_fillRectangle(MICROUI_GraphicsContext* gc, jint x1, jint y1, jint x2, jint y2) {
 	_drawing_dma2d_wait();
 
-	LLUI_DISPLAY_setDrawingLimits(gc, x1, y1, x2, y2);
+	LLUI_DISPLAY_setDrawingLimits(x1, y1, x2, y2);
 
 	uint32_t rectangle_width = x2 - x1 + 1;
 	uint32_t rectangle_height = y2 - y1 + 1;
@@ -349,7 +349,7 @@ DRAWING_Status UI_DRAWING_drawImage(MICROUI_GraphicsContext* gc, MICROUI_Image* 
 			// configure environment
 			g_dma2d_running = true;
 			g_callback_notification = &LLUI_DISPLAY_notifyAsynchronousDrawingEnd;
-			LLUI_DISPLAY_setDrawingLimits(gc, x_dest, y_dest, x_dest + width - 1, y_dest + height - 1);
+			LLUI_DISPLAY_setDrawingLimits(x_dest, y_dest, x_dest + width - 1, y_dest + height - 1);
 
 			// start DMA2D
 			_cleanDCache();
