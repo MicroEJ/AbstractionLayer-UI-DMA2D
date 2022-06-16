@@ -9,8 +9,8 @@
  * @file
  * @brief Use STM32 DMA2D (ChromART) for MicroEJ ui_drawing.h implementation.
  * @author MicroEJ Developer Team
- * @version 2.0.0
- * @date 13 May 2022
+ * @version 2.0.1
+ * @date 16 June 2022
  */
 
 #ifdef __cplusplus
@@ -194,6 +194,14 @@ void DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcpy_data) {
 /* ui_drawing.h functions --------------------------------------------*/
 
 DRAWING_Status UI_DRAWING_fillRectangle(MICROUI_GraphicsContext* gc, jint x1, jint y1, jint x2, jint y2) {
+
+	if (LLUI_DISPLAY_isClipEnabled(gc) && !LLUI_DISPLAY_clipRectangle(gc, &x1, &y1, &x2, &y2))
+	{
+		// drawing is out of clip: nothing to do
+		return DRAWING_DONE;
+	}
+	// else: clip disabled (means drawing is fully in clip) or drawing fits the clip
+
 	_drawing_dma2d_wait();
 
 	LLUI_DISPLAY_setDrawingLimits(x1, y1, x2, y2);
