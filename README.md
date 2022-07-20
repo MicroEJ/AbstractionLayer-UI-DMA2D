@@ -35,7 +35,7 @@ The functions `DRAWING_DMA2D_configure_memcpy()` and `DRAWING_DMA2D_start_memcpy
 
 Add the following line to your `module.ivy`:
 
-    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="2.0.1"/>
+    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="2.1.0"/>
     
 ## Initialization
 

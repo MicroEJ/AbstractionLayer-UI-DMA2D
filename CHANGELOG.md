@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2022-07-20
+
+### Added
+
+  - Add the compatibility with the STM32H7 series.
+
+### Changed
+
+  - Manage the overlapping (draw an image on the same image) 
+  		- by using a fast software algorithm when the opacity is fully opaque (alpha == 0xff),
+  		- by using the DMA2D otherwise (block per block).  
+
 ## [2.0.1] - 2022-06-16
 
 ### Fixed
