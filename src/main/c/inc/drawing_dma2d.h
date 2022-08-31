@@ -26,8 +26,8 @@
  * 		 - Call "DRAWING_DMA2D_start_memcpy()" in LCD interrupt (optional).
  *
  * @author MicroEJ Developer Team
- * @version 2.1.0
- * @date 20 July 2022
+ * @version 3.0.0
+ * @date 31 August 2022
  */
 
 #ifdef __cplusplus

@@ -9,8 +9,8 @@
  * @file
  * @brief Use STM32 DMA2D (ChromART) for MicroEJ ui_drawing.h implementation.
  * @author MicroEJ Developer Team
- * @version 2.1.0
- * @date 20 July 2022
+ * @version 3.0.0
+ * @date 31 August 2022
  */
 
 #ifdef __cplusplus
@@ -258,6 +258,8 @@ static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContex
 		dma2d_blending_data->x_dest = data_x_dest;
 		dma2d_blending_data->y_dest = y_dest;
 		dma2d_blending_data->alpha = alpha;
+
+		_cleanDCache();
 	}
 
 	return is_dma2d_compatible;
@@ -389,122 +391,6 @@ static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t* dma2d_blen
 	}
 }
 
-/*
- * @brief Draws a region of an image using the DMA2D.
- *
- * @param[in] dma2d_blending_data the blending configuration
- */
-static void _drawing_dma2d(DRAWING_DMA2D_blending_t* dma2d_blending_data){
-
-	_cleanDCache();
-
-	if (dma2d_blending_data->src_address == dma2d_blending_data->dest_address) {
-		// source and destination target same buffer: have to check the overlapping
-
-		if ((dma2d_blending_data->y_dest == dma2d_blending_data->y_src) && (dma2d_blending_data->x_dest > dma2d_blending_data->x_src) && (dma2d_blending_data->x_dest < (dma2d_blending_data->x_src + dma2d_blending_data->width))){
-			_drawing_dma2d_overlap_horizontal(dma2d_blending_data);
-		}
-		else if ((dma2d_blending_data->y_dest > dma2d_blending_data->y_src) && (dma2d_blending_data->y_dest < (dma2d_blending_data->y_src + dma2d_blending_data->height))){
-			_drawing_dma2d_overlap_vertical(dma2d_blending_data);
-		}
-		else {
-			_drawing_dma2d_blending_configure(dma2d_blending_data);
-			_drawing_dma2d_blending_start(dma2d_blending_data);
-		}
-	}
-	else {
-		_drawing_dma2d_blending_configure(dma2d_blending_data);
-		_drawing_dma2d_blending_start(dma2d_blending_data);
-	}
-
-	LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data->x_dest, dma2d_blending_data->y_dest, dma2d_blending_data->x_dest + dma2d_blending_data->width - 1, dma2d_blending_data->y_dest + dma2d_blending_data->height - 1);
-}
-
-
-#if DRAWING_DMA2D_BPP == 16
-
-/**
- * Copies 16-bit elements of an array into an other array.
- * The elements are copied from the first one to the last one ("left to right").
- */
-static void memcpy_16_ltr(uint16_t* destination, const uint16_t* source, uint32_t num) {
-	for (int i = 0; i < (int)num; ++i) {
-		destination[i] = source[i];
-	}
-}
-
-/**
- * Copies 16-bit elements of an array into an other array.
- * The elements are copied from the last one to the first one ("right to left").
- */
-static void memcpy_16_rtl(uint16_t* destination, const uint16_t* source, uint32_t num) {
-	for (int i = (int)num-1; i >= 0; --i) {
-		destination[i] = source[i];
-	}
-}
-
-/**
- * Copies consecutive pixels of a buffer from a position to an other position.
- * The pixels are copied in the given order ("right to left" or "left to right").
- */
-static void _drawing_soft_copy_pixels(uint8_t* src8, uint32_t src_stride, uint8_t* dst8, uint32_t dst_stride, uint32_t src_x, uint32_t src_y,
-		uint32_t width, uint32_t dst_x, uint32_t dst_y, bool rtl) {
-
-	// cppcheck-suppress [misra-c2012-11.3] cast 8 to 16 is ensured by the multiplication with stride
-	uint16_t* dst = ((uint16_t*) dst8) + ((dst_y * dst_stride) + dst_x);
-	// cppcheck-suppress [misra-c2012-11.3] cast 8 to 16 is ensured by the multiplication with stride
-	uint16_t* src = ((uint16_t*) src8) + ((src_y * src_stride) + src_x);
-
-	if (rtl) {
-		memcpy_16_rtl(dst, src, width);
-	} else {
-		memcpy_16_ltr(dst, src, width);
-	}
-}
-
-/**
- * Copies a region of an image to an other image with same format. Manages the overlapping when source == destination.
- */
-static void _drawing_soft_copy_region(MICROUI_Image* dest, MICROUI_Image* source, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest) {
-
-	uint8_t* src = LLUI_DISPLAY_getBufferAddress(source);
-	uint8_t* dst = LLUI_DISPLAY_getBufferAddress(dest);
-	uint32_t src_stride = LLUI_DISPLAY_getStrideInPixels(source);
-	uint32_t dst_stride = LLUI_DISPLAY_getStrideInPixels(dest);
-
-	if (y_dest <= y_src) {
-		bool rtl = ((y_dest == y_src) && (x_dest > x_src)); // true when copying to the same rows but to the right
-		for (int dy = 0; dy < height; dy++) { // top to bottom
-			_drawing_soft_copy_pixels(src, src_stride, dst, dst_stride, x_src, y_src+dy, width, x_dest, y_dest+dy, rtl);
-		}
-	} else {
-		for (int dy = height-1; dy >= 0; dy--) { // bottom to top
-			_drawing_soft_copy_pixels(src, src_stride, dst, dst_stride, x_src, y_src+dy, width, x_dest, y_dest+dy, false);
-		}
-	}
-
-	LLUI_DISPLAY_setDrawingLimits(x_dest, y_dest, x_dest + width - 1, y_dest + height - 1);
-}
-
-#endif // DRAWING_DMA2D_BPP
-
-/*
- * @brief Tells if given image blending is useful to be performed or not.
- *
- * @param[in] dest the destination
- * @param[in] source the image to draw
- * @param[in] x_src: the source's region X coordinate
- * @param[in] y_src: the source's region Y coordinate
- * @param[in] width: the width of the region to draw
- * @param[in] height: the width of the region to draw
- * @param[in] x_dest: the destination X coordinate
- * @param[in] y_dest: the destination Y coordinate
- * @param[in] alpha the opacity to apply
- */
-static inline bool _is_useless_drawing(MICROUI_Image* dest, MICROUI_Image* source, jint x_src, jint y_src, jint x_dest, jint y_dest, jint alpha) {
-	return (dest == source) && (0xff == alpha) && (x_src == x_dest) && (y_src == y_dest);
-}
-
 /* Interrupt functions -------------------------------------------------------*/
 
 void DRAWING_DMA2D_IRQHandler(void) {
@@ -624,37 +510,50 @@ DRAWING_Status UI_DRAWING_fillRectangle(MICROUI_GraphicsContext* gc, jint x1, ji
 DRAWING_Status UI_DRAWING_drawImage(MICROUI_GraphicsContext* gc, MICROUI_Image* image, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest, jint alpha) {
 
 	DRAWING_Status ret;
-	if (!_is_useless_drawing(&gc->image, image, x_src, y_src, x_dest, y_dest, alpha)){
+	DRAWING_DMA2D_blending_t dma2d_blending_data;
 
-#if DRAWING_DMA2D_BPP == 16
-		if ((0xff == alpha) && (gc->image.format == image->format)) {
-			// source and destination have the same format and no opacity is applied
-			// -> software algorithm is faster than DMA2D
-			_drawing_soft_copy_region(&gc->image, image, x_src, y_src, width, height, x_dest, y_dest);
-			ret = DRAWING_DONE;
-		}
-		else{
-#endif // DRAWING_DMA2D_BPP
-
-			DRAWING_DMA2D_blending_t dma2d_blending_data;
-
-			if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
-				_drawing_dma2d(&dma2d_blending_data);
-				ret = DRAWING_RUNNING;
-			}
-			else {
-				UI_DRAWING_SOFT_drawImage(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
-				ret = DRAWING_DONE;
-			}
-#if DRAWING_DMA2D_BPP == 16
-		}
-#endif // DRAWING_DMA2D_BPP
+	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
+		_drawing_dma2d_blending_configure(&dma2d_blending_data);
+		_drawing_dma2d_blending_start(&dma2d_blending_data);
+		ret = DRAWING_RUNNING;
 	}
 	else {
-		// nothing to do
+		UI_DRAWING_SOFT_drawImage(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 		ret = DRAWING_DONE;
 	}
 
+	return ret;
+}
+
+DRAWING_Status UI_DRAWING_drawRegion(MICROUI_GraphicsContext* gc, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest, jint alpha){
+
+	DRAWING_Status ret;
+	DRAWING_DMA2D_blending_t dma2d_blending_data;
+
+	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
+		// use several times the DMA2D
+
+		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) && (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) && (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))){
+			// draw with overlap: cut the drawings in several widths
+			_drawing_dma2d_overlap_horizontal(&dma2d_blending_data);
+		}
+		else if ((dma2d_blending_data.y_dest > dma2d_blending_data.y_src) && (dma2d_blending_data.y_dest < (dma2d_blending_data.y_src + dma2d_blending_data.height))){
+			// draw with overlap: cut the drawings in several heights
+			_drawing_dma2d_overlap_vertical(&dma2d_blending_data);
+		}
+		else {
+			// draw source on itself applying an opacity and without overlap
+			_drawing_dma2d_blending_configure(&dma2d_blending_data);
+			_drawing_dma2d_blending_start(&dma2d_blending_data);
+		}
+		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
+		ret = DRAWING_RUNNING;
+	}
+	else {
+		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
+		UI_DRAWING_SOFT_drawImage(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
+		ret = DRAWING_DONE;
+	}
 	return ret;
 }
 
