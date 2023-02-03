@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2022 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2023 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -9,8 +9,8 @@
  * @file
  * @brief Use STM32 DMA2D (ChromART) for MicroEJ ui_drawing.h implementation.
  * @author MicroEJ Developer Team
- * @version 3.0.0
- * @date 31 August 2022
+ * @version 3.0.2
+ * @date 3 February 2023
  */
 
 #ifdef __cplusplus
@@ -513,6 +513,7 @@ DRAWING_Status UI_DRAWING_drawImage(MICROUI_GraphicsContext* gc, MICROUI_Image* 
 	DRAWING_DMA2D_blending_t dma2d_blending_data;
 
 	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
+		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
 		_drawing_dma2d_blending_configure(&dma2d_blending_data);
 		_drawing_dma2d_blending_start(&dma2d_blending_data);
 		ret = DRAWING_RUNNING;
@@ -533,6 +534,8 @@ DRAWING_Status UI_DRAWING_drawRegion(MICROUI_GraphicsContext* gc, jint x_src, ji
 	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
 		// use several times the DMA2D
 
+		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
+
 		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) && (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) && (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))){
 			// draw with overlap: cut the drawings in several widths
 			_drawing_dma2d_overlap_horizontal(&dma2d_blending_data);
@@ -546,7 +549,6 @@ DRAWING_Status UI_DRAWING_drawRegion(MICROUI_GraphicsContext* gc, jint x_src, ji
 			_drawing_dma2d_blending_configure(&dma2d_blending_data);
 			_drawing_dma2d_blending_start(&dma2d_blending_data);
 		}
-		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
 		ret = DRAWING_RUNNING;
 	}
 	else {
