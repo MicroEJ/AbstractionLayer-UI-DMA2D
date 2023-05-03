@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2023-05-03
+
+### Added
+
+  - Add the dependency to the CCO MicroUI 3.0.0 (automatically fetched by transitivity).
+  - Add the compatibility with multiple Graphics Context output formats (UI Pack 13.5.0).
+
+### Changed
+
+  - Make the CCO compatible with UI pack 13.5.0 and higher.
+
+### Fixed
+
+  - Fix an include directive for case-sensitive filesystems.
+  
+### Migration Guide
+
+  - Follow the migration steps of CCO MicroUI 3.0.0
+  - [VEE Port configuration project] 
+  		- CCO Display-DMA2D 4.0.0.
+  - [BSP project] 
+  		- Delete the properties file `cco_display-dma2d.properties`.
+  		- Delete the C files `drawing_dma2d.h` and  `drawing_dma2d.c` and remove them from the C project configuration.
+  		- In the C project configuration, include the new C file `ui_drawing_dma2d.c`.
+  		- Replace the import `drawing_dma2d.h` by `ui_drawing_dma2d.h`.
+  		- Replace the calls to functions `DRAWING_DMA2D_xxx()` by `UI_DRAWING_DMA2D_xxx()`.
+  - Build the VEE Port and the BSP.
+
+## [3.1.0] - 2023-04-13
+
+### Added
+
+  - Add the configuration file `drawing_dma2d_configuration.h` to enable or not the cache management (cache invalidate and clean).
+
+### Fixed
+
+  - Fix the problems with reading memory back after a DMA2D transfer on cache-enabled CPUs.
+  
+### Migration Guide
+
+  1. Read the comments about the cache in `drawing_dma2d_configuration.h`.
+  2. Uncomment the expected define `DRAWING_DMA2D_CACHE_MANAGEMENT` (enable or disable the cache management).
+  
+
 ## [3.0.2] - 2023-02-02
 
 ### Fixed
