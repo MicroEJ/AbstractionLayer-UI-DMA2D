@@ -18,7 +18,6 @@
  * 		 
  *
  * @author MicroEJ Developer Team
- * @version 4.0.0
  */
 
 #ifdef __cplusplus

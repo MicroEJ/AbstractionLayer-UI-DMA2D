@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 4.0.0
+ * @version 4.1.0
  */
 
 // --------------------------------------------------------------------------------
