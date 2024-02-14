@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2023-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -12,10 +12,8 @@
  * @file
  * @brief This file provides the configuration of ui_drawing_dma2d.c.
  *
- * How to use this library:
- *  - Set the define DRAWING_DMA2D_CACHE_MANAGEMENT to DRAWING_DMA2D_CACHE_MANAGEMENT_DISABLED
- *	  or DRAWING_DMA2D_CACHE_MANAGEMENT_ENABLED depending on the MPU configuration
- * 		 
+ * Refer to the VEE Porting Guide > Graphics User Interface > C Module documentation to have more
+ * information about the features of this C module, how to use it and how to configure it.
  *
  * @author MicroEJ Developer Team
  */
@@ -24,11 +22,17 @@
 extern "C" {
 #endif
 
-// --------------------------------------------------------------------------------
-// Includes
-// --------------------------------------------------------------------------------
+/**
+ * @brief Compatibility sanity check value.
+ * This define value is checked in the implementation to validate that the version of this configuration
+ * is compatible with the implementation.
+ *
+ * This value must not be changed by the user of the CCO.
+ * This value must be incremented by the implementor of the CCO when a configuration define is added, deleted or modified.
+ */
+#define DMA2D_CONFIGURATION_VERSION (1)
 
-#include <stdint.h>
+#error "This header must be customized with VEE Port specific configuration. Remove this #error when done. This file is not modified when a new version of the CCO is installed."
 
 // --------------------------------------------------------------------------------
 // Defines
@@ -44,7 +48,7 @@ extern "C" {
  * @brief Value to enable the cache management
  * @see DRAWING_DMA2D_CACHE_MANAGEMENT 
  */ 
-#define DRAWING_DMA2D_CACHE_MANAGEMENT_ENABLED  (1U)
+#define DRAWING_DMA2D_CACHE_MANAGEMENT_ENABLED (1U)
 
 #if !defined (__DCACHE_PRESENT) || (__DCACHE_PRESENT == 0U)
 

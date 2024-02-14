@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -18,21 +18,8 @@ extern "C" {
  * specified in the VEE port. When the drawing cannot be performed by the GPU, the software
  * implementation is used insted.
  *
- * This library provides the implementation of ui_drawing.h "UI_DRAWING_fillRectangle()" and
- * "UI_DRAWING_drawImage()" functions. The third feature "memcpy" is useful when a copy from frame
- * buffer to back buffer is required after the call to "LLUI_DISPLAY_IMPL_flush()".
- *
- * How to use this library:
- * - Set the define DRAWING_DMA2D_BPP to 16, 24 or 32 (project global define)
- * - Set the define STM32F4XX, STM32F7XX or STM32H7XX (project global define)
- * - Configures the cache management: see ui_drawing_dma2d_configuration.h
- * - Call "UI_DRAWING_DMA2D_initialize()" during "LLUI_DISPLAY_IMPL_initialize()"
- * - Redirect the STM32 DMA2D interrupt routine to "UI_DRAWING_DMA2D_IRQHandler()"
- * - Call "UI_DRAWING_DMA2D_configure_memcpy()" in "LLUI_DISPLAY_IMPL_flush()" before enabling LCD interrupt (optional).
- * - Call "UI_DRAWING_DMA2D_start_memcpy()" in LCD interrupt (optional).
- *
  * @author MicroEJ Developer Team
- * @version 4.1.0
+ * @version 5.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -42,6 +29,7 @@ extern "C" {
 #include <LLUI_DISPLAY_impl.h>
 
 #include "ui_drawing.h"
+#include "ui_drawing_dma2d_configuration.h"
 
 #ifdef STM32F4XX
 #include "stm32f4xx_hal.h"
@@ -66,7 +54,7 @@ extern "C" {
  * and LLDW_PAINTER_impl.c. This file overrides each function independently to use the
  * DMA2D.
  */
-  
+
 #define UI_DRAWING_DMA2D_fillRectangle UI_DRAWING_fillRectangle
 #define UI_DRAWING_DMA2D_drawImage UI_DRAWING_drawImage
 #define UI_DRAWING_DMA2D_copyImage UI_DRAWING_copyImage
@@ -143,6 +131,16 @@ void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint
  * @param[in] memcpy_data the internal representation of the memcpy to perform.
  */
 void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcyp_data);
+
+/*
+ * @brief Notifies the end of the copy (callback called by the the framework).
+ *
+ * The caller of memcpy should implement this function to be notified about the end of
+ * the copy. A default implementation is available which does noting.
+ *
+ * @param[in] from_isr true when this function is called under an interrupt context.
+ */
+void UI_DRAWING_DMA2D_memcpy_callback(bool from_isr);
 
 // --------------------------------------------------------------------------------
 // ui_drawing.h API

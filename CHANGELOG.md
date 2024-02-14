@@ -5,11 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.1.0] - 2023-10-23
+## [5.0.0] - 2024-02-14
+
+- Compatible with MicroEJ UI Pack 14.0.x.
+
+### Added
+
+- Add the function `UI_DRAWING_DMA2D_memcpy_callback()` to be notified about the end of the memory copy.
+- Add the support of the display Buffer Refresh Strategies (BRS) `PREDRAW` and `SINGLE`.
+- Add the configuration version (`1`).
 
 ### Changed
 
-  - Fetch CCO com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
+- Make the CCO compatible with the UI Pack 14.0.0 (CCO MicroUI 4.0.0).
+
+## [4.1.1] - 2023-10-25
+
+- Compatible with MicroEJ UI Pack 13.7.x.
+
+### Changed
+
+- Update the license file.
+
+## [4.1.0] - 2023-10-23
+
+- Compatible with MicroEJ UI Pack 13.7.x.
+
+### Changed
+
+- Fetch CCO com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
 
 ### Fixed
 
@@ -17,139 +41,150 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2023-05-03
 
+- Compatible with MicroEJ UI Pack 13.5.x and 13.6.x
+
 ### Added
 
-  - Add the dependency to the CCO MicroUI 3.0.0 (automatically fetched by transitivity).
-  - Add the compatibility with multiple Graphics Context output formats (UI Pack 13.5.0).
+- Add the dependency to the CCO MicroUI 3.0.0 (automatically fetched by transitivity).
+- Add the compatibility with multiple Graphics Context output formats (UI Pack 13.5.0).
 
 ### Changed
 
-  - Make the CCO compatible with UI pack 13.5.0 and higher.
+- Make the CCO compatible with UI pack 13.5.0 and higher.
 
 ### Fixed
 
-  - Fix an include directive for case-sensitive filesystems.
-  
-### Migration Guide
-
-  - Follow the migration steps of CCO MicroUI 3.0.0
-  - [VEE Port configuration project] 
-  		- CCO Display-DMA2D 4.0.0.
-  - [BSP project] 
-  		- Delete the properties file `cco_display-dma2d.properties`.
-  		- Delete the C files `drawing_dma2d.h` and  `drawing_dma2d.c` and remove them from the C project configuration.
-  		- In the C project configuration, include the new C file `ui_drawing_dma2d.c`.
-  		- Replace the import `drawing_dma2d.h` by `ui_drawing_dma2d.h`.
-  		- Replace the calls to functions `DRAWING_DMA2D_xxx()` by `UI_DRAWING_DMA2D_xxx()`.
-  - Build the VEE Port and the BSP.
+- Fix an include directive for case-sensitive filesystems.
 
 ## [3.1.0] - 2023-04-13
 
+- Compatible with MicroEJ UI Pack 13.3.x and 13.4.x.
+
 ### Added
 
-  - Add the configuration file `drawing_dma2d_configuration.h` to enable or not the cache management (cache invalidate and clean).
+- Add the configuration file `drawing_dma2d_configuration.h` to enable or not the cache management (cache invalidate and clean).
 
 ### Fixed
 
-  - Fix the problems with reading memory back after a DMA2D transfer on cache-enabled CPUs.
-  
-### Migration Guide
-
-  1. Read the comments about the cache in `drawing_dma2d_configuration.h`.
-  2. Uncomment the expected define `DRAWING_DMA2D_CACHE_MANAGEMENT` (enable or disable the cache management).
-  
+- Fix the problems with reading memory back after a DMA2D transfer on cache-enabled CPUs.
 
 ## [3.0.2] - 2023-02-02
 
+- Compatible with MicroEJ UI Pack 13.3.x and 13.4.x.
+
 ### Fixed
 
-  - Fix the flush bounds when drawing an image: must be set before calling `LLUI_DISPLAY_notifyAsynchronousDrawingEnd()`.
-  
+- Fix the flush bounds when drawing an image: must be set before calling `LLUI_DISPLAY_notifyAsynchronousDrawingEnd()`.
+
 ## [3.0.1] - 2022-12-16
 
+- Compatible with MicroEJ UI Pack 13.3.x and 13.4.x.
+
 ### Fixed
 
-  - Fix the flush bounds when drawing an image.
+- Fix the flush bounds when drawing an image.
 
 ## [3.0.0] - 2022-08-31
 
+- Compatible with MicroEJ UI Pack 13.3.x and 13.4.x.
+
 ### Added
 
-  - Add the implementation of `UI_DRAWING_drawRegion`.
+- Add the implementation of `UI_DRAWING_drawRegion`.
 
 ### Changed
 
-  - Make CCO compatible UI pack 13.3 and higher.
-  - Simplify the implementation of `UI_DRAWING_drawImage`: new specification ensures the overlapping is not possible (not backward compatible).
+- Make CCO compatible UI pack 13.3 and higher.
+- Simplify the implementation of `UI_DRAWING_drawImage`: new specification ensures the overlapping is not possible (not backward compatible).
 
 ### Removed
 
-  - Remove the software implementation of "image overlap": already available in UI Pack 13.3.0.
+- Remove the software implementation of "image overlap": already available in UI Pack 13.3.0.
 
 ## [2.1.0] - 2022-07-20
 
+- Compatible with MicroEJ UI Pack 13.1.x and 13.2.x.
+
 ### Added
 
-  - Add the compatibility with the STM32H7 series.
+- Add the compatibility with the STM32H7 series.
 
 ### Changed
 
-  - Manage the overlapping (draw an image on the same image) 
-  		- by using a fast software algorithm when the opacity is fully opaque (alpha == 0xff),
-  		- by using the DMA2D otherwise (block per block).  
+- Manage the overlapping (draw an image on the same image) 
+	- by using a fast software algorithm when the opacity is fully opaque (alpha == 0xff),
+	- by using the DMA2D otherwise (block per block).
 
 ## [2.0.1] - 2022-06-16
 
+- Compatible with MicroEJ UI Pack 13.1.x and 13.2.x.
+
 ### Fixed
 
-  - Fix the limitation of UI Pack 13.x in checking the MicroUI GraphicsContext clip before filling a rectangle.
+- Fix the limitation of UI Pack 13.x in checking the MicroUI GraphicsContext clip before filling a rectangle.
 
 ## [2.0.0] - 2022-05-13
 
+- Compatible with MicroEJ UI Pack 13.1.x and 13.2.x.
+
 ### Changed
 
-  - Make CCO compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
-  
+- Make CCO compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
+
 ## [1.0.8] - 2022-05-13
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - Fix the use of returned code when drawing images with the DMA2D.
-  - Clean cache before each DMA2D transfer (no-op on STM32 CPU without cache).
-  
+- Fix the use of returned code when drawing images with the DMA2D.
+- Clean cache before each DMA2D transfer (no-op on STM32 CPU without cache).
+
 ## [1.0.7] - 2022-04-28
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - Fix the license and copyrights: use BSD License.
-  - Fix Misra rules.
+- Fix the license and copyrights: use BSD License.
+- Fix Misra rules.
 
 ## [1.0.6] - 2020-12-08
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - Fix missing license file.
+- Fix missing license file.
 
 ## [1.0.5] - 2020-09-23
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - De-init the DMA2D before re-initializing it, to reset the context at HAL level.
-  - Manipulate drawing limits after being sure the DMA2D is finished.
+- De-init the DMA2D before re-initializing it, to reset the context at HAL level.
+- Manipulate drawing limits after being sure the DMA2D is finished.
 
 ## [1.0.4] - 2020-09-15
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - Draw an image on same image is not supported by DMA2D when destination region overlaps source region.
+- Draw an image on same image is not supported by DMA2D when destination region overlaps source region.
 
 ## [1.0.3] - 2020-09-02
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
-  - Fix artifact organization
+- Fix artifact organization
 
 ## [1.0.2] - 2020-07-28
+
+- Compatible with MicroEJ UI Pack 13.0.x.
 
 ### Fixed
 
@@ -158,11 +193,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1] - 2020-04-24
 
+- Compatible with MicroEJ UI Pack 13.0.x.
+
 ### Fixed
 
 - Fix UI3 function names 
 
 ## [1.0.0] - 2020-04-09
+
+- Compatible with MicroEJ UI Pack 13.0.x.
 
 ### Added
 
@@ -174,6 +213,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ---
-_Copyright 2019-2023 MicroEJ Corp. All rights reserved._  
+_Copyright 2019-2024 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._  
 

@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 4.1.0
+ * @version 5.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -21,9 +21,30 @@
 // --------------------------------------------------------------------------------
 
 #include "ui_drawing_dma2d.h"
-#include "ui_drawing_dma2d_configuration.h"
 #include "ui_drawing_soft.h"
 #include "ui_image_drawing.h"
+#include "ui_display_brs.h"
+#include "bsp_util.h"
+
+// -----------------------------------------------------------------------------
+// Configuration Sanity Check
+// -----------------------------------------------------------------------------
+
+/**
+ * Sanity check between the expected version of the configuration and the actual version of
+ * the configuration.
+ * If an error is raised here, it means that a new version of the CCO has been installed and
+ * the configuration ui_drawing_dma2d_configuration.h must be updated based on the one provided
+ * by the new CCO version.
+ */
+
+#if !defined DMA2D_CONFIGURATION_VERSION
+#error "Undefined DMA2D_CONFIGURATION_VERSION, it must be defined in ui_drawing_nema_configuration.h"
+#endif
+
+#if defined DMA2D_CONFIGURATION_VERSION && DMA2D_CONFIGURATION_VERSION != 1
+#error "Version of the configuration file ui_drawing_dma2d_configuration.h is not compatible with this implementation."
+#endif
 
 // --------------------------------------------------------------------------------
 // Defines
@@ -46,9 +67,9 @@
  * @brief Ensures the configuration of the cache management.
  */
 #ifndef DRAWING_DMA2D_CACHE_MANAGEMENT
-#error "Please define the DRAWING_DMA2D_CACHE_MANAGEMENT in drawing_dma2d_configuration.h"
+#error "Please define the DRAWING_DMA2D_CACHE_MANAGEMENT in ui_drawing_dma2d_configuration.h"
 #endif
-    
+
 // --------------------------------------------------------------------------------
 // Types
 // --------------------------------------------------------------------------------
@@ -423,6 +444,13 @@ static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t* dma2d_blen
 	}
 }
 
+static void _drawing_dma2d_restore_callback(bool from_isr) {
+	// notify memcpy's caller
+	UI_DRAWING_DMA2D_memcpy_callback(from_isr);
+	// unlock the MicroUI Graphics Engine 
+	LLUI_DISPLAY_notifyAsynchronousDrawingEnd(from_isr);
+}
+
 // --------------------------------------------------------------------------------
 // Interrupt functions
 // --------------------------------------------------------------------------------
@@ -474,7 +502,7 @@ void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint
 	HAL_DMA2D_ConfigLayer(&g_hdma2d, 1);
 
 	// configure DMA2D
-	g_hdma2d.Init.Mode  = DMA2D_M2M;
+	g_hdma2d.Init.Mode = DMA2D_M2M;
 	g_hdma2d.Init.OutputOffset = stride - width;
 	HAL_DMA2D_Init(&g_hdma2d) ;
 
@@ -485,7 +513,7 @@ void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint
 	memcpy_data->height = height;
 
 	// configure environment
-	g_callback_notification = &LLUI_DISPLAY_flushDone;
+	g_callback_notification = &UI_DRAWING_DMA2D_memcpy_callback; // default callback
 	g_dma2d_running = true;
 }
 
@@ -503,6 +531,25 @@ void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcpy_data) {
 	);
 }
 
+// See the header file for the function documentation
+BSP_DECLARE_WEAK_FCNT void UI_DRAWING_DMA2D_memcpy_callback(bool from_isr) {
+	// does nothing by default (see header file)
+	(void)from_isr;
+}
+
+// --------------------------------------------------------------------------------
+// ui_display_brs.h functions
+// --------------------------------------------------------------------------------
+
+// See the header file for the function documentation
+DRAWING_Status UI_DISPLAY_BRS_restore(MICROUI_GraphicsContext* gc, MICROUI_Image* old_back_buffer, ui_rect_t* rect) {
+	DRAWING_DMA2D_memcpy memcpy_data;
+	UI_DRAWING_DMA2D_configure_memcpy(LLUI_DISPLAY_getBufferAddress(old_back_buffer), LLUI_DISPLAY_getBufferAddress(&gc->image), rect->x1, rect->y1, rect->x2, rect->y2, LLUI_DISPLAY_getStrideInPixels(&gc->image), &memcpy_data);
+	g_callback_notification = &_drawing_dma2d_restore_callback;
+	UI_DRAWING_DMA2D_start_memcpy(&memcpy_data);
+	return DRAWING_RUNNING;
+}
+
 // --------------------------------------------------------------------------------
 // ui_drawing.h / ui_drawing_dma2d.h functions
 // (the function names differ according to the available number of destination formats)
@@ -512,8 +559,6 @@ void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcpy_data) {
 DRAWING_Status UI_DRAWING_DMA2D_fillRectangle(MICROUI_GraphicsContext* gc, jint x1, jint y1, jint x2, jint y2) {
 
 	_drawing_dma2d_wait();
-
-	LLUI_DISPLAY_setDrawingLimits(x1, y1, x2, y2);
 
 	uint32_t rectangle_width = x2 - x1 + 1;
 	uint32_t rectangle_height = y2 - y1 + 1;
@@ -547,7 +592,6 @@ DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext* gc, MICROUI_I
 	DRAWING_DMA2D_blending_t dma2d_blending_data;
 
 	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
-		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
 		_drawing_dma2d_blending_configure(&dma2d_blending_data);
 		_drawing_dma2d_blending_start(&dma2d_blending_data);
 		ret = DRAWING_RUNNING;
@@ -581,8 +625,6 @@ DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext* gc, jint x_s
 
 	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
 		// use several times the DMA2D
-
-		LLUI_DISPLAY_setDrawingLimits(dma2d_blending_data.x_dest, dma2d_blending_data.y_dest, dma2d_blending_data.x_dest + dma2d_blending_data.width - 1, dma2d_blending_data.y_dest + dma2d_blending_data.height - 1);
 
 		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) && (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) && (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))){
 			// draw with overlap: cut the drawings in several widths

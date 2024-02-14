@@ -1,91 +1,37 @@
 
 # Overview
 
-## Aim
+MicroEJ C Component: `com.microej.clibrary.llimpl#display-dma2d`.
 
-This CCO uses the STM32 DMA2D
-- to fill rectangles (see `ui_drawing.h`, function `UI_DRAWING_fillRectangle`),
-- to draw some images (see `ui_drawing.h`, function `UI_DRAWING_drawImage`),
-- to copy the content of a buffer to another buffer.
+This component implements some Low-Level API (LLAPI) of MicroUI-3.x over the STM32 DMA2D (Chrom-ART Graphics Accelerator). 
+Refer to the VEE Porting Guide > Graphics User Interface > C Module to have more information on this module.
 
 ## UI Pack Compatibility
 
-It is compatible with the UI-pack [13.1.0-14.0.0[.
+This compoment is MicroEJ UI Pack dependent: it is compatible with one or several MicroEJ UI Pack versions. The following table illustrates the compatibility:
 
-## Images Compatibility
+| Component     | MicroEJ UI Pack   |
+| ------------- | ----------------- |
+| 5.0.0         | [14.0.0 - 15.0.0[ | 
+| [4.1.0-4.1.1] | [13.7.0 - 14.0.0[ |
+| 4.0.0         | [13.5.0 - 13.7.0[ |
+| [3.0.0-3.1.0] | [13.3.0 - 13.5.0[ |
+| [2.0.0-2.1.0] | [13.1.0 - 13.2.0[ |
+| [1.0.0-1.0.8] | [13.0.0 - 14.0.0[ |
 
-The DMA2D is used to render the images in RAW formats:
-- RGB565
-- RGB888
-- ARGB8888
-- ARGB4444
-- ARGB1555
-- A4 (1)
-- A8
-
-> (1) The first and last odd columns are drawn in software (GPU memory alignment constraints).
-
-## Copy Buffer
-
-The functions `DRAWING_DMA2D_configure_memcpy()` and `DRAWING_DMA2D_start_memcpy()` can be used to copy the content of a frame buffer to another frame buffer. See chapter Usage.
+> Note: this component is useless (and not compatible) for the MicroEJ UI Packs before version 13.0.0.
 
 # Usage
 
-## Declaration
+1. Add the following line to your `module.ivy`:
 
-Add the following line to your `module.ivy`:
+    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="5.0.0"/>
 
-    <dependency org="com.microej.clibrary.llimpl" name="display-dma2d" rev="4.1.0"/>
-    
-## Initialization
+2. Follow the **Usage** chapters of each component part (see VEE Porting Guide > Graphics User Interface > C Module)
 
-The function `DRAWING_DMA2D_initialize()` must be called from the implementation of `LLUI_DISPLAY_IMPL_initialize()` (during MicroUI startup).
-    
-## Drawings
-    
-The functions `UI_DRAWING_drawImage()` and `UI_DRAWING_fillRectangle()` are automatically called to fill the rectangles and to draw some images (for more details, see Platform Developer Guide, chapter Graphical User Interface).
+# Migration Guide
 
-## Flush
-
-To use the DMA2D to copy the content of a frame buffer to another frame buffer, 
-- the function `DRAWING_DMA2D_configure_memcpy()` must be called from the implementation of `LLUI_DISPLAY_IMPL_flush()`,
-- the function `DRAWING_DMA2D_start_memcpy()` must be call from the LCD controller IRQ routine,
-- the function `DRAWING_DMA2D_IRQHandler` must be call from the DMA2D IRQ routine.
-
-Example of implementation:
-
-```c
-uint8_t* LLUI_DISPLAY_IMPL_flush(MICROUI_GraphicsContext* gc, uint8_t* srcAddr, uint32_t xmin, uint32_t ymin, uint32_t xmax, uint32_t ymax) {
-	uint8_t* destAddr = (srcAddr == (uint8_t*)BACK_BUFFER) ? (uint8_t*)FRAME_BUFFER : (uint8_t*)BACK_BUFFER;
-	HAL_LTDC_SetAddress(&hLtdcHandler, (uint32_t)srcAddr, LTDC_ACTIVE_LAYER);
-	DRAWING_DMA2D_configure_memcpy(srcAddr, destAddr, xmin, ymin, xmax, ymax, RK043FN48H_WIDTH, &dma2d_memcpy);
-	lcd_enable_interrupt();
-	return destAddr;
-}
-
-void DMA2D_IRQHandler(void) {
-	DRAWING_DMA2D_IRQHandler();
-}
-
-void HAL_LTDC_ReloadEventCallback(LTDC_HandleTypeDef *hltdc) {
-	// LTDC register reload
-	__HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_RR);
-
-	// launch the copy from backbuffer to lcd buffer
-	DRAWING_DMA2D_start_memcpy(&dma2d_memcpy);
-}
-
-```
-
-## Cache
-
-Some STM32 CPU use a cache. 
-
-This cache must be cleared before using the DMA2D: 
-- before the call to `HAL_DMA2D_Start_IT()` (2 iterations),
-- before the call to `HAL_DMA2D_BlendingStart_IT()`.
-
-> For the STM32 CPU without cache, this call has no effect. 
+The migration guides are described in the VEE Porting Guide > Graphical User Interface > Migration Guide. 
 
 # Requirements
 
@@ -104,5 +50,5 @@ N/A
 None.
 
 ---
-_Copyright 2019-2022 MicroEJ Corp. All rights reserved._  
-_Use of this source code is governed by a BSD-style license that can be found with this software._
+_Copyright 2019-2024 MicroEJ Corp. All rights reserved._  
+_Use of this source code is governed by a BSD-style license that can be found with this software._  
