@@ -19,7 +19,7 @@ extern "C" {
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 5.0.0
+ * @version 5.0.1
  */
 
 // --------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ void UI_DRAWING_DMA2D_initialize(void* binary_semaphore_handle);
 void UI_DRAWING_DMA2D_IRQHandler(void);
 
 /*
- * @brief Configures the copy from frame buffer to back buffer just after a flush.
+ * @brief Configures the copy from a buffer to another buffer just.
  *
  * @param[in] srcAddr the address of the buffer to copy.
  * @param[in] destAddr the address of the destination buffer.
