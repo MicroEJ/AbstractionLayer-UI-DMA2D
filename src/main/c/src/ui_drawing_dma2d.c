@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 5.0.1
+ * @version 6.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -34,16 +34,16 @@
  * Sanity check between the expected version of the configuration and the actual version of
  * the configuration.
  * If an error is raised here, it means that a new version of the CCO has been installed and
- * the configuration ui_drawing_dma2d_configuration.h must be updated based on the one provided
+ * the configuration ui_dma2d_configuration.h must be updated based on the one provided
  * by the new CCO version.
  */
 
 #if !defined DMA2D_CONFIGURATION_VERSION
-#error "Undefined DMA2D_CONFIGURATION_VERSION, it must be defined in ui_drawing_nema_configuration.h"
+#error "Undefined DMA2D_CONFIGURATION_VERSION, it must be defined in ui_dma2d_configuration.h"
 #endif
 
 #if defined DMA2D_CONFIGURATION_VERSION && DMA2D_CONFIGURATION_VERSION != 1
-#error "Version of the configuration file ui_drawing_dma2d_configuration.h is not compatible with this implementation."
+#error "Version of the configuration file ui_dma2d_configuration.h is not compatible with this implementation."
 #endif
 
 // --------------------------------------------------------------------------------
@@ -67,7 +67,7 @@
  * @brief Ensures the configuration of the cache management.
  */
 #ifndef DRAWING_DMA2D_CACHE_MANAGEMENT
-#error "Please define the DRAWING_DMA2D_CACHE_MANAGEMENT in ui_drawing_dma2d_configuration.h"
+#error "Please define the DRAWING_DMA2D_CACHE_MANAGEMENT in ui_dma2d_configuration.h"
 #endif
 
 // --------------------------------------------------------------------------------
@@ -83,8 +83,8 @@ typedef void (*t_drawing_notification)(bool under_isr);
  * @brief Working data when blending an image with the DMA2D
  */
 typedef struct {
-	uint8_t* src_address; // address of the image to draw
-	uint8_t* dest_address; // address of the destination
+	uint8_t *src_address; // address of the image to draw
+	uint8_t *dest_address; // address of the destination
 	uint32_t src_stride; // source image' stride
 	uint32_t dest_stride; // destination' stride
 	jchar dest_width; // destination's width
@@ -123,7 +123,7 @@ static bool g_dma2d_running;
 /*
  * @brief Binary semaphore used to lock a DMA2D user when DMA2D is already running.
  */
-static void* g_dma2d_semaphore;
+static void *g_dma2d_semaphore;
 
 // --------------------------------------------------------------------------------
 // Private functions
@@ -133,7 +133,7 @@ static void* g_dma2d_semaphore;
  * @brief Ensures DMA2D previous work is done before returning.
  */
 static inline void _drawing_dma2d_wait(void) {
-	while(g_dma2d_running) {
+	while (g_dma2d_running) {
 		LLUI_DISPLAY_IMPL_binarySemaphoreTake(g_dma2d_semaphore);
 	}
 }
@@ -143,7 +143,7 @@ static inline void _drawing_dma2d_wait(void) {
  *
  * After each DMA_2D transfer, the data cache must be invalidated because the
  * graphics memory is in the memory which is defined "cache enabled" in the MPU
- * configuration and reading back data will be done from the cache if the cache 
+ * configuration and reading back data will be done from the cache if the cache
  * is not invalidated
  *
  * This feature is only required on STM32 CPUs that hold a cache.
@@ -181,7 +181,8 @@ static inline void _drawing_dma2d_done(void) {
 /*
  * @brief Adjusts the given address to target the given point.
  */
-static inline uint8_t* _drawing_dma2d_adjust_address(uint8_t* address, uint32_t x, uint32_t y, uint32_t stride, uint32_t bpp) {
+static inline uint8_t * _drawing_dma2d_adjust_address(uint8_t *address, uint32_t x, uint32_t y, uint32_t stride,
+                                                      uint32_t bpp) {
 	// cppcheck-suppress [misra-c2012-18.4] address += offset
 	return address + ((((y * stride) + x) * bpp) / (uint32_t)8);
 }
@@ -189,7 +190,7 @@ static inline uint8_t* _drawing_dma2d_adjust_address(uint8_t* address, uint32_t 
 /*
  * @brief For A4 and A8 formats, alpha contains both the global alpha + wanted color.
  */
-static inline void _drawing_dma2d_configure_alpha_image_data(MICROUI_GraphicsContext* gc, jint* alphaAndColor) {
+static inline void _drawing_dma2d_configure_alpha_image_data(MICROUI_GraphicsContext *gc, jint *alphaAndColor) {
 	// for A4 and A8 formats, alphaAndColor is both the global alpha + wanted color
 	*(alphaAndColor) <<= 24;
 	*(alphaAndColor) |= (gc->foreground_color & 0xffffff);
@@ -214,35 +215,42 @@ static inline void _drawing_dma2d_configure_alpha_image_data(MICROUI_GraphicsCon
  *
  * @return true if the source is compatible with the DMA2D
  */
-static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContext* gc, MICROUI_Image* image, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest, jint alpha, DRAWING_DMA2D_blending_t* dma2d_blending_data){
-
+static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContext *gc, MICROUI_Image *image, jint x_src,
+                                                          jint y_src, jint width, jint height, jint x_dest, jint y_dest,
+                                                          jint alpha, DRAWING_DMA2D_blending_t *dma2d_blending_data) {
 	bool is_dma2d_compatible = true;
 	jint data_width = width;
 	jint data_x_src = x_src;
 	jint data_x_dest = x_dest;
 
-	switch(image->format) {
+	switch (image->format) {
 	case MICROUI_IMAGE_FORMAT_RGB565:
 		dma2d_blending_data->src_dma2d_format = CM_RGB565;
 		dma2d_blending_data->src_bpp = 16;
 		break;
+
 	case MICROUI_IMAGE_FORMAT_ARGB8888:
 		dma2d_blending_data->src_dma2d_format = CM_ARGB8888;
 		dma2d_blending_data->src_bpp = 32;
 		break;
+
 	case MICROUI_IMAGE_FORMAT_RGB888:
 		dma2d_blending_data->src_dma2d_format = CM_RGB888;
 		dma2d_blending_data->src_bpp = 24;
 		break;
+
 	case MICROUI_IMAGE_FORMAT_ARGB1555:
 		dma2d_blending_data->src_dma2d_format = CM_ARGB1555;
 		dma2d_blending_data->src_bpp = 16;
 		break;
+
 	case MICROUI_IMAGE_FORMAT_ARGB4444:
 		dma2d_blending_data->src_dma2d_format = CM_ARGB4444;
 		dma2d_blending_data->src_bpp = 16;
 		break;
-	case MICROUI_IMAGE_FORMAT_A4: {
+
+	case MICROUI_IMAGE_FORMAT_A4:
+	{
 		// check DMA2D limitations: first and last vertical lines addresses must be aligned on 8 bits
 
 		jint xAlign = data_x_src & 1;
@@ -252,11 +260,11 @@ static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContex
 			if (wAlign != 0) {
 				// hard cannot draw last vertical line
 				--data_width;
-				UI_DRAWING_SOFT_drawImage(gc, image, data_x_src + data_width, y_src, 1, height, data_x_dest + data_width, y_dest, alpha);
+				UI_DRAWING_SOFT_drawImage(gc, image, data_x_src + data_width, y_src, 1, height,
+				                          data_x_dest + data_width, y_dest, alpha);
 			}
 			// else: easy case: first and last vertical lines are aligned on 8 bits
-		}
-		else {
+		} else {
 			if (wAlign == 0) {
 				// worst case: hard cannot draw first and last vertical lines
 
@@ -265,13 +273,13 @@ static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContex
 
 				// last line
 				--data_width;
-				UI_DRAWING_SOFT_drawImage(gc, image, data_x_src + data_width, y_src, 1, height, data_x_dest + data_width, y_dest, alpha);
+				UI_DRAWING_SOFT_drawImage(gc, image, data_x_src + data_width, y_src, 1, height,
+				                          data_x_dest + data_width, y_dest, alpha);
 
 				++data_x_src;
 				++data_x_dest;
 				--data_width;
-			}
-			else {
+			} else {
 				// cannot draw first vertical line
 				UI_DRAWING_SOFT_drawImage(gc, image, data_x_src, y_src, 1, height, data_x_dest, y_dest, alpha);
 				++data_x_src;
@@ -285,19 +293,21 @@ static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContex
 		dma2d_blending_data->src_bpp = 4;
 		break;
 	}
+
 	case MICROUI_IMAGE_FORMAT_A8:
 		_drawing_dma2d_configure_alpha_image_data(gc, &alpha);
 		dma2d_blending_data->src_dma2d_format = CM_A8;
 		dma2d_blending_data->src_bpp = 8;
 		break;
+
 	default:
 		// unsupported image format
 		is_dma2d_compatible = false;
 		break;
 	}
 
-	if (is_dma2d_compatible){
-		MICROUI_Image* dest = &gc->image;
+	if (is_dma2d_compatible) {
+		MICROUI_Image *dest = &gc->image;
 		dma2d_blending_data->src_address = LLUI_DISPLAY_getBufferAddress(image);
 		dma2d_blending_data->dest_address = LLUI_DISPLAY_getBufferAddress(dest);
 		dma2d_blending_data->src_stride = LLUI_DISPLAY_getStrideInPixels(image);
@@ -325,8 +335,7 @@ static bool _drawing_dma2d_is_image_compatible_with_dma2d(MICROUI_GraphicsContex
  *
  * @param[in] dma2d_blending_data the blending configuration
  */
-static void _drawing_dma2d_blending_configure(DRAWING_DMA2D_blending_t* dma2d_blending_data) {
-
+static void _drawing_dma2d_blending_configure(DRAWING_DMA2D_blending_t *dma2d_blending_data) {
 	_drawing_dma2d_wait();
 
 	// de-init DMA2D
@@ -350,7 +359,7 @@ static void _drawing_dma2d_blending_configure(DRAWING_DMA2D_blending_t* dma2d_bl
 	// configure DMA2D
 	g_hdma2d.Init.Mode = DMA2D_M2M_BLEND;
 	g_hdma2d.Init.OutputOffset = dma2d_blending_data->dest_stride - dma2d_blending_data->width;
-	HAL_DMA2D_Init(&g_hdma2d) ;
+	HAL_DMA2D_Init(&g_hdma2d);
 
 	// configure environment (useless if false is returned)
 	g_callback_notification = &LLUI_DISPLAY_notifyAsynchronousDrawingEnd;
@@ -361,13 +370,18 @@ static void _drawing_dma2d_blending_configure(DRAWING_DMA2D_blending_t* dma2d_bl
  *
  * @param[in] dma2d_blending_data the blending configuration
  */
-static inline void _drawing_dma2d_blending_start(DRAWING_DMA2D_blending_t* dma2d_blending_data){
-	uint8_t* srcAddr = _drawing_dma2d_adjust_address(dma2d_blending_data->src_address, dma2d_blending_data->x_src, dma2d_blending_data->y_src, dma2d_blending_data->src_stride, dma2d_blending_data->src_bpp);
-	uint8_t* destAddr = _drawing_dma2d_adjust_address(dma2d_blending_data->dest_address, dma2d_blending_data->x_dest, dma2d_blending_data->y_dest, dma2d_blending_data->dest_stride, DRAWING_DMA2D_BPP);
+static inline void _drawing_dma2d_blending_start(DRAWING_DMA2D_blending_t *dma2d_blending_data) {
+	uint8_t *srcAddr = _drawing_dma2d_adjust_address(dma2d_blending_data->src_address, dma2d_blending_data->x_src,
+	                                                 dma2d_blending_data->y_src, dma2d_blending_data->src_stride,
+	                                                 dma2d_blending_data->src_bpp);
+	uint8_t *destAddr = _drawing_dma2d_adjust_address(dma2d_blending_data->dest_address, dma2d_blending_data->x_dest,
+	                                                  dma2d_blending_data->y_dest, dma2d_blending_data->dest_stride,
+	                                                  DRAWING_DMA2D_BPP);
 	g_dma2d_running = true;
 
 	// cppcheck-suppress [misra-c2012-11.4] allow cast address in u32 (see HAL_DMA2D_BlendingStart_IT())
-	HAL_DMA2D_BlendingStart_IT(&g_hdma2d, (uint32_t)srcAddr, (uint32_t)destAddr, (uint32_t)destAddr, dma2d_blending_data->width, dma2d_blending_data->height);
+	HAL_DMA2D_BlendingStart_IT(&g_hdma2d, (uint32_t)srcAddr, (uint32_t)destAddr, (uint32_t)destAddr,
+	                           dma2d_blending_data->width, dma2d_blending_data->height);
 }
 
 /*
@@ -377,8 +391,7 @@ static inline void _drawing_dma2d_blending_start(DRAWING_DMA2D_blending_t* dma2d
  *
  * @param[in] dma2d_blending_data the blending configuration
  */
-static void _drawing_dma2d_overlap_horizontal(DRAWING_DMA2D_blending_t* dma2d_blending_data) {
-
+static void _drawing_dma2d_overlap_horizontal(DRAWING_DMA2D_blending_t *dma2d_blending_data) {
 	// retrieve band's width
 	jint width = dma2d_blending_data->width;
 	dma2d_blending_data->width = dma2d_blending_data->x_dest - dma2d_blending_data->x_src;
@@ -389,9 +402,8 @@ static void _drawing_dma2d_overlap_horizontal(DRAWING_DMA2D_blending_t* dma2d_bl
 	dma2d_blending_data->x_dest = dma2d_blending_data->x_src + dma2d_blending_data->width;
 
 	while (width > 0) {
-
 		// adjust band's width
-		if (width < dma2d_blending_data->width){
+		if (width < dma2d_blending_data->width) {
 			dma2d_blending_data->width = width;
 			_drawing_dma2d_blending_configure(dma2d_blending_data);
 		}
@@ -414,8 +426,7 @@ static void _drawing_dma2d_overlap_horizontal(DRAWING_DMA2D_blending_t* dma2d_bl
  *
  * @param[in] dma2d_blending_data the blending configuration
  */
-static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t* dma2d_blending_data) {
-
+static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t *dma2d_blending_data) {
 	// retrieve band's height
 	jint height = dma2d_blending_data->height;
 	dma2d_blending_data->height = dma2d_blending_data->y_dest - dma2d_blending_data->y_src;
@@ -426,9 +437,8 @@ static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t* dma2d_blen
 	dma2d_blending_data->y_dest = dma2d_blending_data->y_src + dma2d_blending_data->height;
 
 	while (height > 0) {
-
 		// adjust band's height
-		if (height < dma2d_blending_data->height){
+		if (height < dma2d_blending_data->height) {
 			dma2d_blending_data->height = height;
 			// no need to configure again the DMA2D
 		}
@@ -447,7 +457,7 @@ static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t* dma2d_blen
 static void _drawing_dma2d_restore_callback(bool from_isr) {
 	// notify memcpy's caller
 	UI_DRAWING_DMA2D_memcpy_callback(from_isr);
-	// unlock the MicroUI Graphics Engine 
+	// unlock the MicroUI Graphics Engine
 	LLUI_DISPLAY_notifyAsynchronousDrawingEnd(from_isr);
 }
 
@@ -472,7 +482,7 @@ void UI_DRAWING_DMA2D_IRQHandler(void) {
 // --------------------------------------------------------------------------------
 
 // See the header file for the function documentation
-void UI_DRAWING_DMA2D_initialize(void* binary_semaphore_handle) {
+void UI_DRAWING_DMA2D_initialize(void *binary_semaphore_handle) {
 	// configure globals
 	g_dma2d_running = false;
 	g_dma2d_semaphore = binary_semaphore_handle;
@@ -487,7 +497,8 @@ void UI_DRAWING_DMA2D_initialize(void* binary_semaphore_handle) {
 }
 
 // See the header file for the function documentation
-void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint32_t xmin, uint32_t ymin, uint32_t xmax, uint32_t ymax, uint32_t stride, DRAWING_DMA2D_memcpy* memcpy_data) {
+void UI_DRAWING_DMA2D_configure_memcpy(uint8_t *srcAddr, uint8_t *destAddr, uint32_t xmin, uint32_t ymin, uint32_t xmax,
+                                       uint32_t ymax, uint32_t stride, DRAWING_DMA2D_memcpy *memcpy_data) {
 	_drawing_dma2d_wait();
 
 	uint32_t width = (xmax - xmin + (uint32_t)1);
@@ -504,7 +515,7 @@ void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint
 	// configure DMA2D
 	g_hdma2d.Init.Mode = DMA2D_M2M;
 	g_hdma2d.Init.OutputOffset = stride - width;
-	HAL_DMA2D_Init(&g_hdma2d) ;
+	HAL_DMA2D_Init(&g_hdma2d);
 
 	// configure given structure (to give later to DRAWING_DMA2D_start_memcpy())
 	memcpy_data->src_address = _drawing_dma2d_adjust_address(srcAddr, xmin, ymin, stride, DRAWING_DMA2D_BPP);
@@ -518,17 +529,17 @@ void UI_DRAWING_DMA2D_configure_memcpy(uint8_t* srcAddr, uint8_t* destAddr, uint
 }
 
 // See the header file for the function documentation
-void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy* memcpy_data) {
+void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy *memcpy_data) {
 	_cleanDCache();
 	HAL_DMA2D_Start_IT(
-			&g_hdma2d,
-			// cppcheck-suppress [misra-c2012-11.4] cast address as expectded by DMA2D driver
-			(uint32_t)(memcpy_data->src_address),
-			// cppcheck-suppress [misra-c2012-11.4] cast address as expectded by DMA2D driver
-			(uint32_t)(memcpy_data->dest_address),
-			memcpy_data->width,
-			memcpy_data->height
-	);
+		&g_hdma2d,
+		// cppcheck-suppress [misra-c2012-11.4] cast address as expectded by DMA2D driver
+		(uint32_t)(memcpy_data->src_address),
+		// cppcheck-suppress [misra-c2012-11.4] cast address as expectded by DMA2D driver
+		(uint32_t)(memcpy_data->dest_address),
+		memcpy_data->width,
+		memcpy_data->height
+		);
 }
 
 // See the header file for the function documentation
@@ -542,9 +553,11 @@ BSP_DECLARE_WEAK_FCNT void UI_DRAWING_DMA2D_memcpy_callback(bool from_isr) {
 // --------------------------------------------------------------------------------
 
 // See the header file for the function documentation
-DRAWING_Status UI_DISPLAY_BRS_restore(MICROUI_GraphicsContext* gc, MICROUI_Image* old_back_buffer, ui_rect_t* rect) {
+DRAWING_Status UI_DISPLAY_BRS_restore(MICROUI_GraphicsContext *gc, MICROUI_Image *old_back_buffer, ui_rect_t *rect) {
 	DRAWING_DMA2D_memcpy memcpy_data;
-	UI_DRAWING_DMA2D_configure_memcpy(LLUI_DISPLAY_getBufferAddress(old_back_buffer), LLUI_DISPLAY_getBufferAddress(&gc->image), rect->x1, rect->y1, rect->x2, rect->y2, LLUI_DISPLAY_getStrideInPixels(&gc->image), &memcpy_data);
+	UI_DRAWING_DMA2D_configure_memcpy(LLUI_DISPLAY_getBufferAddress(old_back_buffer),
+	                                  LLUI_DISPLAY_getBufferAddress(&gc->image), rect->x1, rect->y1, rect->x2, rect->y2,
+	                                  LLUI_DISPLAY_getStrideInPixels(&gc->image), &memcpy_data);
 	g_callback_notification = &_drawing_dma2d_restore_callback;
 	UI_DRAWING_DMA2D_start_memcpy(&memcpy_data);
 	return DRAWING_RUNNING;
@@ -556,8 +569,7 @@ DRAWING_Status UI_DISPLAY_BRS_restore(MICROUI_GraphicsContext* gc, MICROUI_Image
 // --------------------------------------------------------------------------------
 
 // See the header file for the function documentation
-DRAWING_Status UI_DRAWING_DMA2D_fillRectangle(MICROUI_GraphicsContext* gc, jint x1, jint y1, jint x2, jint y2) {
-
+DRAWING_Status UI_DRAWING_DMA2D_fillRectangle(MICROUI_GraphicsContext *gc, jint x1, jint y1, jint x2, jint y2) {
 	_drawing_dma2d_wait();
 
 	uint32_t rectangle_width = x2 - x1 + 1;
@@ -578,25 +590,27 @@ DRAWING_Status UI_DRAWING_DMA2D_fillRectangle(MICROUI_GraphicsContext* gc, jint 
 
 	// start DMA2D
 	_cleanDCache();
-	uint8_t* destination_address = _drawing_dma2d_adjust_address(LLUI_DISPLAY_getBufferAddress(&gc->image), x1, y1, stride, DRAWING_DMA2D_BPP);
+	uint8_t *destination_address = _drawing_dma2d_adjust_address(LLUI_DISPLAY_getBufferAddress(&gc->image), x1, y1,
+	                                                             stride, DRAWING_DMA2D_BPP);
 	// cppcheck-suppress [misra-c2012-11.4] allow cast address in u32 (see HAL_DMA2D_Start_IT())
-	HAL_DMA2D_Start_IT(&g_hdma2d, gc->foreground_color, (uint32_t)destination_address, rectangle_width, rectangle_height);
+	HAL_DMA2D_Start_IT(&g_hdma2d, gc->foreground_color, (uint32_t)destination_address, rectangle_width,
+	                   rectangle_height);
 
 	return DRAWING_RUNNING;
 }
 
 // See the header file for the function documentation
-DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext* gc, MICROUI_Image* image, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest, jint alpha) {
-
+DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext *gc, MICROUI_Image *image, jint x_src, jint y_src,
+                                          jint width, jint height, jint x_dest, jint y_dest, jint alpha) {
 	DRAWING_Status ret;
 	DRAWING_DMA2D_blending_t dma2d_blending_data;
 
-	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
+	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha,
+	                                                  &dma2d_blending_data)) {
 		_drawing_dma2d_blending_configure(&dma2d_blending_data);
 		_drawing_dma2d_blending_start(&dma2d_blending_data);
 		ret = DRAWING_RUNNING;
-	}
-	else {
+	} else {
 #if !defined(LLUI_IMAGE_CUSTOM_FORMATS)
 		UI_DRAWING_SOFT_drawImage(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 		ret = DRAWING_DONE;
@@ -609,39 +623,41 @@ DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext* gc, MICROUI_I
 }
 
 // See the header file for the function documentation
-DRAWING_Status UI_DRAWING_DMA2D_copyImage(MICROUI_GraphicsContext* gc, MICROUI_Image* img, jint regionX, jint regionY, jint width, jint height, jint x, jint y){
+DRAWING_Status UI_DRAWING_DMA2D_copyImage(MICROUI_GraphicsContext *gc, MICROUI_Image *img, jint regionX, jint regionY,
+                                          jint width, jint height, jint x, jint y) {
 	return (img == &gc->image) ?
-			// have to manage the overlap
-			UI_DRAWING_DMA2D_drawRegion(gc, regionX, regionY, width, height, x, y, 0xff)
-			// no overlap: draw image as usual
-			: UI_DRAWING_DMA2D_drawImage(gc, img, regionX, regionY, width, height, x, y, 0xff);
+	       // have to manage the overlap
+	       UI_DRAWING_DMA2D_drawRegion(gc, regionX, regionY, width, height, x, y, 0xff)
+	       // no overlap: draw image as usual
+	        : UI_DRAWING_DMA2D_drawImage(gc, img, regionX, regionY, width, height, x, y, 0xff);
 }
 
 // See the header file for the function documentation
-DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext* gc, jint x_src, jint y_src, jint width, jint height, jint x_dest, jint y_dest, jint alpha){
-
+DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext *gc, jint x_src, jint y_src, jint width, jint height,
+                                           jint x_dest, jint y_dest, jint alpha) {
 	DRAWING_Status ret;
 	DRAWING_DMA2D_blending_t dma2d_blending_data;
 
-	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha, &dma2d_blending_data)){
+	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest,
+	                                                  alpha, &dma2d_blending_data)) {
 		// use several times the DMA2D
 
-		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) && (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) && (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))){
+		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) &&
+		    (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) &&
+		    (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))) {
 			// draw with overlap: cut the drawings in several widths
 			_drawing_dma2d_overlap_horizontal(&dma2d_blending_data);
-		}
-		else if ((dma2d_blending_data.y_dest > dma2d_blending_data.y_src) && (dma2d_blending_data.y_dest < (dma2d_blending_data.y_src + dma2d_blending_data.height))){
+		} else if ((dma2d_blending_data.y_dest > dma2d_blending_data.y_src) &&
+		           (dma2d_blending_data.y_dest < (dma2d_blending_data.y_src + dma2d_blending_data.height))) {
 			// draw with overlap: cut the drawings in several heights
 			_drawing_dma2d_overlap_vertical(&dma2d_blending_data);
-		}
-		else {
+		} else {
 			// draw source on itself applying an opacity and without overlap
 			_drawing_dma2d_blending_configure(&dma2d_blending_data);
 			_drawing_dma2d_blending_start(&dma2d_blending_data);
 		}
 		ret = DRAWING_RUNNING;
-	}
-	else {
+	} else {
 		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
 #if !defined(LLUI_IMAGE_CUSTOM_FORMATS)
 		UI_DRAWING_SOFT_drawImage(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2024-07-19
+
+### Changed
+
+- Rename this module to `com.microej.clibrary.llimpl#microui-dma2d`.
+- Rename `ui_drawing_dma2d_configuration.h` to `ui_dma2d_configuration.h`.
+- Install the files in the `ui_dma2d` directory.
+
 ## [5.0.1] - 2024-04-09
 
 - Compatible with MicroEJ UI Pack 14.0.x.
@@ -119,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Manage the overlapping (draw an image on the same image) 
+- Manage the overlapping (draw an image on the same image)
 	- by using a fast software algorithm when the opacity is fully opaque (alpha == 0xff),
 	- by using the DMA2D otherwise (block per block).
 
@@ -197,7 +205,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix file names
-- Remove/replace notion of `LLDISPLAY` 
+- Remove/replace notion of `LLDISPLAY`
 
 ## [1.0.1] - 2020-04-24
 
@@ -205,7 +213,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix UI3 function names 
+- Fix UI3 function names
 
 ## [1.0.0] - 2020-04-09
 
@@ -217,10 +225,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implements `LLDISPLAY_EXTRA_IMPL_doFillRect()` and `LLDISPLAY_EXTRA_IMPL_drawImage()`.
 - Supported image formats: ARGB8888, RGB888, ARGB1555, ARGB4444, RGB565, A8 and A4.
 - Features a function to perform a memory copy between two pixels buffers (useful after a flush).
-- Requires defines `LLDISPLAY_BPP` and `STM32F4XX` or `STM32F7XX` (see `lldisplay_dma2d.h`)  
+- Requires defines `LLDISPLAY_BPP` and `STM32F4XX` or `STM32F7XX` (see `lldisplay_dma2d.h`)
 
 
 ---
-_Copyright 2019-2024 MicroEJ Corp. All rights reserved._  
-_Use of this source code is governed by a BSD-style license that can be found with this software._  
-
+_Copyright 2019-2024 MicroEJ Corp. All rights reserved._\
+_Use of this source code is governed by a BSD-style license that can be found with this software._

@@ -5,8 +5,8 @@
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
-#ifndef UI_DRAWING_DMA2D_CONFIGURATION_H
-#define UI_DRAWING_DMA2D_CONFIGURATION_H
+#ifndef UI_DMA2D_CONFIGURATION_H
+#define UI_DMA2D_CONFIGURATION_H
 
 /**
  * @file
@@ -28,11 +28,13 @@ extern "C" {
  * is compatible with the implementation.
  *
  * This value must not be changed by the user of the CCO.
- * This value must be incremented by the implementor of the CCO when a configuration define is added, deleted or modified.
+ * This value must be incremented by the implementor of the CCO when a configuration define is added, deleted or
+ * modified.
  */
 #define DMA2D_CONFIGURATION_VERSION (1)
 
-#error "This header must be customized with VEE Port specific configuration. Remove this #error when done. This file is not modified when a new version of the CCO is installed."
+#error \
+	"This header must be customized with VEE Port specific configuration. Remove this #error when done. This file is not modified when a new version of the CCO is installed."
 
 // --------------------------------------------------------------------------------
 // Defines
@@ -40,17 +42,17 @@ extern "C" {
 
 /*
  * @brief Value to disable the cache management
- * @see DRAWING_DMA2D_CACHE_MANAGEMENT 
- */ 
+ * @see DRAWING_DMA2D_CACHE_MANAGEMENT
+ */
 #define DRAWING_DMA2D_CACHE_MANAGEMENT_DISABLED (0U)
 
 /*
  * @brief Value to enable the cache management
- * @see DRAWING_DMA2D_CACHE_MANAGEMENT 
- */ 
+ * @see DRAWING_DMA2D_CACHE_MANAGEMENT
+ */
 #define DRAWING_DMA2D_CACHE_MANAGEMENT_ENABLED (1U)
 
-#if !defined (__DCACHE_PRESENT) || (__DCACHE_PRESENT == 0U)
+#if !defined(__DCACHE_PRESENT) || (__DCACHE_PRESENT == 0U)
 
 /*
  * @brief This MCU does not have or does not use a cache. Cache management in
@@ -64,10 +66,10 @@ extern "C" {
  * @brief This MCU has a cache. Cache management must be configured.
  *
  * To ensure the best SDRAM performance, the SDRAM section must be configured
- * as cacheable, write-through and shareable. As per the application notes below, 
- * this is required to maintain cache coherency. If the section is not defined as shareable, 
- * cache maintenance has to be performed, which adds overhead to all dma2d transfers: 
- * cache clean before the transfer and cache invalidate after the transfer. 
+ * as cacheable, write-through and shareable. As per the application notes below,
+ * this is required to maintain cache coherency. If the section is not defined as shareable,
+ * cache maintenance has to be performed, which adds overhead to all dma2d transfers:
+ * cache clean before the transfer and cache invalidate after the transfer.
  */
 
 /*
@@ -89,7 +91,7 @@ extern "C" {
  *      MPU_InitStruct.Number = MPU_REGION_NUMBER4;
  *      HAL_MPU_ConfigRegion(&MPU_InitStruct);
  *
- * - Memory region containing display buffers is cacheable, write-through, no write allocate, shareable e.g.: 
+ * - Memory region containing display buffers is cacheable, write-through, no write allocate, shareable e.g.:
  *      MPU_InitStruct.BaseAddress = 0xC0000000;
  *      MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
  *      MPU_InitStruct.IsBufferable = MPU_ACCESS_NON_BUFFERABLE;
@@ -97,8 +99,8 @@ extern "C" {
  *      MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
  *      MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
  *      MPU_InitStruct.Number = MPU_REGION_NUMBER4;
- * 
- * As per application note AN4839, in order to maintain cache coherency, the memory region containing 
+ *
+ * As per application note AN4839, in order to maintain cache coherency, the memory region containing
  * the display buffers and MicroUI images heap have to be configured as write-through and shareable,
  * otherwise cache maintenance operations have to be performed.
  */
@@ -126,12 +128,12 @@ extern "C" {
  *          MPU_InitStruct.IsShareable = MPU_ACCESS_NON_SHAREABLE;
  *          MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
  *          MPU_InitStruct.Number = MPU_REGION_NUMBER4;
- * 
- * Enabling cache management will reduce the performance of the UI, as each dma2d transfer requires 
+ *
+ * Enabling cache management will reduce the performance of the UI, as each dma2d transfer requires
  * cache clean before the transfer and cache invalidate after the transfer to maintain cache coherency.
- * 
- * Cache invalidation is performed in the DMA2D ISR, so for this reason the dma2d drawing code is placed 
- * in the ITCM section to minimize the impact on performance. 
+ *
+ * Cache invalidation is performed in the DMA2D ISR, so for this reason the dma2d drawing code is placed
+ * in the ITCM section to minimize the impact on performance.
  */
 //#define DRAWING_DMA2D_CACHE_MANAGEMENT (DRAWING_DMA2D_CACHE_MANAGEMENT_ENABLED)
 
@@ -145,5 +147,4 @@ extern "C" {
 }
 #endif
 
-#endif // UI_DRAWING_DMA2D_CONFIGURATION_H
-
+#endif // UI_DMA2D_CONFIGURATION_H
