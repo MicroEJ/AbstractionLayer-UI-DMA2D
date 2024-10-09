@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 6.0.0
+ * @version 7.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -24,6 +24,7 @@
 #include "ui_drawing_soft.h"
 #include "ui_image_drawing.h"
 #include "ui_display_brs.h"
+#include "ui_configuration.h"
 #include "bsp_util.h"
 
 // -----------------------------------------------------------------------------
@@ -611,7 +612,7 @@ DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext *gc, MICROUI_I
 		_drawing_dma2d_blending_start(&dma2d_blending_data);
 		ret = DRAWING_RUNNING;
 	} else {
-#if !defined(LLUI_IMAGE_CUSTOM_FORMATS)
+#if !defined(UI_FEATURE_IMAGE_CUSTOM_FORMATS)
 		UI_DRAWING_SOFT_drawImage(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 		ret = DRAWING_DONE;
 #else
@@ -659,7 +660,7 @@ DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext *gc, jint x_s
 		ret = DRAWING_RUNNING;
 	} else {
 		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
-#if !defined(LLUI_IMAGE_CUSTOM_FORMATS)
+#if !defined(UI_FEATURE_IMAGE_CUSTOM_FORMATS)
 		UI_DRAWING_SOFT_drawImage(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 		ret = DRAWING_DONE;
 #else

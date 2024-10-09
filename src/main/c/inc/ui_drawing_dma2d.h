@@ -19,7 +19,7 @@ extern "C" {
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 6.0.0
+ * @version 7.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ extern "C" {
 #include <LLUI_DISPLAY_impl.h>
 
 #include "ui_drawing.h"
+#include "ui_configuration.h"
 #include "ui_dma2d_configuration.h"
 
 #ifdef STM32F4XX
@@ -47,7 +48,7 @@ extern "C" {
 // Defines
 // --------------------------------------------------------------------------------
 
-#if !defined(LLUI_GC_SUPPORTED_FORMATS) || (LLUI_GC_SUPPORTED_FORMATS <= 1)
+#if !defined(UI_GC_SUPPORTED_FORMATS) || (UI_GC_SUPPORTED_FORMATS <= 1)
 
 /*
  * The functions UI_DRAWING_DMA2D_xxx() are directly called by LLUI_PAINTER_impl.c
@@ -60,7 +61,7 @@ extern "C" {
 #define UI_DRAWING_DMA2D_copyImage UI_DRAWING_copyImage
 #define UI_DRAWING_DMA2D_drawRegion UI_DRAWING_drawRegion
 
-#else // !defined(LLUI_GC_SUPPORTED_FORMATS) || (LLUI_GC_SUPPORTED_FORMATS <= 1)
+#else // !defined(UI_GC_SUPPORTED_FORMATS) || (UI_GC_SUPPORTED_FORMATS <= 1)
 
 /*
  * The functions UI_DRAWING_DMA2D_xxx() are indirectly called through some tables.
@@ -73,7 +74,7 @@ extern "C" {
 #define UI_DRAWING_DMA2D_copyImage UI_DRAWING_copyImage_0
 #define UI_DRAWING_DMA2D_drawRegion UI_DRAWING_drawRegion_0
 
-#endif // !defined(LLUI_GC_SUPPORTED_FORMATS) || (LLUI_GC_SUPPORTED_FORMATS <= 1)
+#endif // !defined(UI_GC_SUPPORTED_FORMATS) || (UI_GC_SUPPORTED_FORMATS <= 1)
 
 // -----------------------------------------------------------------------------
 // Types
