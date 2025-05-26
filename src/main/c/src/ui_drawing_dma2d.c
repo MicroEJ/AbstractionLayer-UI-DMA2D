@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2024 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2025 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 7.0.0
+ * @version 7.0.1
  */
 
 // --------------------------------------------------------------------------------
@@ -455,6 +455,36 @@ static void _drawing_dma2d_overlap_vertical(DRAWING_DMA2D_blending_t *dma2d_blen
 	}
 }
 
+static DRAWING_Status _draw_region_overlap(MICROUI_GraphicsContext *gc, MICROUI_Image *img, jint x_src, jint y_src,
+                                           jint width, jint height, jint x_dest, jint y_dest, jint alpha) {
+	DRAWING_Status ret = DRAWING_DONE;
+	DRAWING_DMA2D_blending_t dma2d_blending_data;
+
+	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, img, x_src, y_src, width, height, x_dest, y_dest,
+	                                                  alpha, &dma2d_blending_data)) {
+		// use several times the DMA2D
+
+		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) &&
+		    (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) &&
+		    (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))) {
+			// draw with overlap: cut the drawings in several widths
+			_drawing_dma2d_overlap_horizontal(&dma2d_blending_data);
+		} else if ((dma2d_blending_data.y_dest > dma2d_blending_data.y_src) &&
+		           (dma2d_blending_data.y_dest < (dma2d_blending_data.y_src + dma2d_blending_data.height))) {
+			// draw with overlap: cut the drawings in several heights
+			_drawing_dma2d_overlap_vertical(&dma2d_blending_data);
+		} else {
+			// draw source on itself applying an opacity and without overlap
+			_drawing_dma2d_blending_configure(&dma2d_blending_data);
+			_drawing_dma2d_blending_start(&dma2d_blending_data);
+		}
+		ret = DRAWING_RUNNING;
+	}
+	// else: drawing is not running: returns "DONE" which means "nothing has been drawn"
+
+	return ret;
+}
+
 static void _drawing_dma2d_restore_callback(bool from_isr) {
 	// notify memcpy's caller
 	UI_DRAWING_DMA2D_memcpy_callback(from_isr);
@@ -626,44 +656,29 @@ DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext *gc, MICROUI_I
 // See the header file for the function documentation
 DRAWING_Status UI_DRAWING_DMA2D_copyImage(MICROUI_GraphicsContext *gc, MICROUI_Image *img, jint regionX, jint regionY,
                                           jint width, jint height, jint x, jint y) {
-	return (img == &gc->image) ?
-	       // have to manage the overlap
-	       UI_DRAWING_DMA2D_drawRegion(gc, regionX, regionY, width, height, x, y, 0xff)
-	       // no overlap: draw image as usual
-	        : UI_DRAWING_DMA2D_drawImage(gc, img, regionX, regionY, width, height, x, y, 0xff);
+	DRAWING_Status status = DRAWING_DONE;
+
+	status = _draw_region_overlap(gc, img, regionX, regionY, width, height, x, y, 0xff);
+
+	if (DRAWING_RUNNING != status) {
+		// the GPU is not running -> use the soft algo
+		status = UI_DRAWING_SOFT_copyImage(gc, img, regionX, regionY, width, height, x, y);
+	}
+
+	return status;
 }
 
 // See the header file for the function documentation
 DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext *gc, jint x_src, jint y_src, jint width, jint height,
                                            jint x_dest, jint y_dest, jint alpha) {
-	DRAWING_Status ret;
-	DRAWING_DMA2D_blending_t dma2d_blending_data;
+	DRAWING_Status ret = _draw_region_overlap(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 
-	if (_drawing_dma2d_is_image_compatible_with_dma2d(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest,
-	                                                  alpha, &dma2d_blending_data)) {
-		// use several times the DMA2D
-
-		if ((dma2d_blending_data.y_dest == dma2d_blending_data.y_src) &&
-		    (dma2d_blending_data.x_dest > dma2d_blending_data.x_src) &&
-		    (dma2d_blending_data.x_dest < (dma2d_blending_data.x_src + dma2d_blending_data.width))) {
-			// draw with overlap: cut the drawings in several widths
-			_drawing_dma2d_overlap_horizontal(&dma2d_blending_data);
-		} else if ((dma2d_blending_data.y_dest > dma2d_blending_data.y_src) &&
-		           (dma2d_blending_data.y_dest < (dma2d_blending_data.y_src + dma2d_blending_data.height))) {
-			// draw with overlap: cut the drawings in several heights
-			_drawing_dma2d_overlap_vertical(&dma2d_blending_data);
-		} else {
-			// draw source on itself applying an opacity and without overlap
-			_drawing_dma2d_blending_configure(&dma2d_blending_data);
-			_drawing_dma2d_blending_start(&dma2d_blending_data);
-		}
-		ret = DRAWING_RUNNING;
-	} else {
-		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
+	if (DRAWING_RUNNING != ret) {
+		// the GPU is not running -> use the soft algo
 #if !defined(UI_FEATURE_IMAGE_CUSTOM_FORMATS)
-		UI_DRAWING_SOFT_drawImage(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
-		ret = DRAWING_DONE;
+		ret = UI_DRAWING_SOFT_drawRegion(gc, x_src, y_src, width, height, x_dest, y_dest, alpha);
 #else
+		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
 		ret = UI_IMAGE_DRAWING_draw(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 #endif
 	}
