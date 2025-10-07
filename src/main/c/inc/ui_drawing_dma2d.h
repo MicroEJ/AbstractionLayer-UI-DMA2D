@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2025 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2025 MicroEJ Corp.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -19,7 +19,7 @@ extern "C" {
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 7.0.1
+ * @version 8.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -29,7 +29,6 @@ extern "C" {
 #include <LLUI_DISPLAY_impl.h>
 
 #include "ui_drawing.h"
-#include "ui_configuration.h"
 #include "ui_dma2d_configuration.h"
 
 #ifdef STM32F4XX

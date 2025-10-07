@@ -15,7 +15,7 @@ This compoment is MicroEJ UI Pack dependent: it is compatible with one or severa
 
 1. Add the following line to your `module.ivy`:
 
-    <dependency org="com.microej.clibrary.llimpl" name="microui-dma2d" rev="7.0.1"/>
+    <dependency org="com.microej.clibrary.llimpl" name="microui-dma2d" rev="8.0.0"/>
 
 2. Follow the **Usage** chapters of each component part (see VEE Porting Guide > Graphics User Interface > C Module)
 
@@ -40,5 +40,5 @@ N/A.
 None.
 
 ---
-_Copyright 2019-2024 MicroEJ Corp. All rights reserved._\
+_Copyright 2019-2025 MicroEJ Corp._\
 _Use of this source code is governed by a BSD-style license that can be found with this software._

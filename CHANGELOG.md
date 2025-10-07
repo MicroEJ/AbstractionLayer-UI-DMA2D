@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.0] - 2025-10-07
+
+- Compatible with MicroEJ UI Pack 14.5.0.
+
+### Changed
+
+- Use the UI Pack 14.5.0 options convention.
+
+### Fixed
+
+- Fix the copyright headers.
+
 ## [7.0.1] - 2025-05-26
 
 ### Fixed
@@ -55,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make the CCO compatible with the UI Pack 14.0.0 (CCO MicroUI 4.0.0).
+- Make the C Module compatible with the UI Pack 14.0.0 (C Module MicroUI 4.0.0).
 
 ## [4.1.1] - 2023-10-25
 
@@ -71,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fetch CCO com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
+- Fetch C Module com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
 
 ### Fixed
 
@@ -83,12 +95,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add the dependency to the CCO MicroUI 3.0.0 (automatically fetched by transitivity).
+- Add the dependency to the C Module MicroUI 3.0.0 (automatically fetched by transitivity).
 - Add the compatibility with multiple Graphics Context output formats (UI Pack 13.5.0).
 
 ### Changed
 
-- Make the CCO compatible with UI pack 13.5.0 and higher.
+- Make the C Module compatible with UI pack 13.5.0 and higher.
 
 ### Fixed
 
@@ -132,7 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make CCO compatible UI pack 13.3 and higher.
+- Make C Module compatible UI pack 13.3 and higher.
 - Simplify the implementation of `UI_DRAWING_drawImage`: new specification ensures the overlapping is not possible (not backward compatible).
 
 ### Removed
@@ -167,7 +179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make CCO compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
+- Make C Module compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
 
 ## [1.0.8] - 2022-05-13
 
@@ -251,5 +263,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ---
-_Copyright 2019-2025 MicroEJ Corp. All rights reserved._\
+_Copyright 2019-2025 MicroEJ Corp._\
 _Use of this source code is governed by a BSD-style license that can be found with this software._

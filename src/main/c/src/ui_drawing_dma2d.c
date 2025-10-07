@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2025 MicroEJ Corp. All rights reserved.
+ * Copyright 2019-2025 MicroEJ Corp.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -13,7 +13,7 @@
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 7.0.1
+ * @version 8.0.0
  */
 
 // --------------------------------------------------------------------------------
@@ -24,28 +24,7 @@
 #include "ui_drawing_soft.h"
 #include "ui_image_drawing.h"
 #include "ui_display_brs.h"
-#include "ui_configuration.h"
 #include "bsp_util.h"
-
-// -----------------------------------------------------------------------------
-// Configuration Sanity Check
-// -----------------------------------------------------------------------------
-
-/**
- * Sanity check between the expected version of the configuration and the actual version of
- * the configuration.
- * If an error is raised here, it means that a new version of the CCO has been installed and
- * the configuration ui_dma2d_configuration.h must be updated based on the one provided
- * by the new CCO version.
- */
-
-#if !defined DMA2D_CONFIGURATION_VERSION
-#error "Undefined DMA2D_CONFIGURATION_VERSION, it must be defined in ui_dma2d_configuration.h"
-#endif
-
-#if defined DMA2D_CONFIGURATION_VERSION && DMA2D_CONFIGURATION_VERSION != 1
-#error "Version of the configuration file ui_dma2d_configuration.h is not compatible with this implementation."
-#endif
 
 // --------------------------------------------------------------------------------
 // Defines
@@ -642,11 +621,11 @@ DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext *gc, MICROUI_I
 		_drawing_dma2d_blending_start(&dma2d_blending_data);
 		ret = DRAWING_RUNNING;
 	} else {
-#if !defined(UI_FEATURE_IMAGE_CUSTOM_FORMATS)
+#if defined UI_FEATURE_IMAGE_CUSTOM_FORMATS && (UI_FEATURE_IMAGE_CUSTOM_FORMATS == 1)
+		ret = UI_IMAGE_DRAWING_draw(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
+#else
 		UI_DRAWING_SOFT_drawImage(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 		ret = DRAWING_DONE;
-#else
-		ret = UI_IMAGE_DRAWING_draw(gc, image, x_src, y_src, width, height, x_dest, y_dest, alpha);
 #endif
 	}
 
@@ -675,11 +654,11 @@ DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext *gc, jint x_s
 
 	if (DRAWING_RUNNING != ret) {
 		// the GPU is not running -> use the soft algo
-#if !defined(UI_FEATURE_IMAGE_CUSTOM_FORMATS)
-		ret = UI_DRAWING_SOFT_drawRegion(gc, x_src, y_src, width, height, x_dest, y_dest, alpha);
-#else
+#if defined UI_FEATURE_IMAGE_CUSTOM_FORMATS && (UI_FEATURE_IMAGE_CUSTOM_FORMATS == 1)
 		// image not compatible with the DMA2D: let the Graphics Engine do the drawing
 		ret = UI_IMAGE_DRAWING_draw(gc, &gc->image, x_src, y_src, width, height, x_dest, y_dest, alpha);
+#else
+		ret = UI_DRAWING_SOFT_drawRegion(gc, x_src, y_src, width, height, x_dest, y_dest, alpha);
 #endif
 	}
 	return ret;
