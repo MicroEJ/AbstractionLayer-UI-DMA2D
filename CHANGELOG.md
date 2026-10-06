@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.2] - 2026-10-06
+
+### Changed
+
+- Compatible with MicroEJ UI Pack 14.5.5.
+- Complete the Doxygen documentation of the headers, and align the README with the other MicroEJ Abstraction Layers.
+
+## [8.0.1] - 2026-08-04
+
+### Fixed
+
+- Fix incorrect Doxygen comments in the DMA2D drawing header.
+
 ## [8.0.0] - 2025-10-07
 
 - Compatible with MicroEJ UI Pack 14.5.0.
@@ -29,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fetch the MicroUI C Module 14.1.0.
+- Fetch the MicroUI Abstraction Layer 14.1.0.
 
 ## [6.0.1] - 2024-10-01
 
@@ -37,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fetch the MicroUI C Module 14.0.3.
+- Fetch the MicroUI Abstraction Layer 14.0.3.
 
 ## [6.0.0] - 2024-07-19
 
@@ -67,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make the C Module compatible with the UI Pack 14.0.0 (C Module MicroUI 4.0.0).
+- Make the Abstraction Layer compatible with the UI Pack 14.0.0 (MicroUI Abstraction Layer 4.0.0).
 
 ## [4.1.1] - 2023-10-25
 
@@ -83,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fetch C Module com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
+- Fetch Abstraction Layer com.microej.clibrary.llimpl#microui#3.1.0 (compatibility with UI Pack 13.7.0).
 
 ### Fixed
 
@@ -95,12 +108,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add the dependency to the C Module MicroUI 3.0.0 (automatically fetched by transitivity).
+- Add the dependency to the MicroUI Abstraction Layer 3.0.0 (automatically fetched by transitivity).
 - Add the compatibility with multiple Graphics Context output formats (UI Pack 13.5.0).
 
 ### Changed
 
-- Make the C Module compatible with UI pack 13.5.0 and higher.
+- Make the Abstraction Layer compatible with UI pack 13.5.0 and higher.
 
 ### Fixed
 
@@ -144,7 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make C Module compatible UI pack 13.3 and higher.
+- Make the Abstraction Layer compatible UI pack 13.3 and higher.
 - Simplify the implementation of `UI_DRAWING_drawImage`: new specification ensures the overlapping is not possible (not backward compatible).
 
 ### Removed
@@ -179,7 +192,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make C Module compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
+- Make the Abstraction Layer compatible UI pack 13.1 and higher (specification `LLUI_DISPLAY_setDrawingLimits()` has changed).
 
 ## [1.0.8] - 2022-05-13
 
@@ -263,5 +276,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ---
-_Copyright 2019-2025 MicroEJ Corp._\
-_Use of this source code is governed by a BSD-style license that can be found with this software._
+_Copyright 2019-2026 MicroEJ Corp._\
+_Use of this source code is governed by a BSD-style license that can be found with this software._\
+_Build: 7E4D1F7C_

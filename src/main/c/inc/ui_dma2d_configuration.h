@@ -1,8 +1,10 @@
 /*
  * C
  *
- * Copyright 2023-2025 MicroEJ Corp.
+ * Copyright 2023-2026 MicroEJ Corp.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
+ *
+ * Build: 7E4D1F7C
  */
 
 /**
@@ -10,7 +12,7 @@
  * @brief This file provides the configuration of ui_drawing_dma2d.c.
  *
  * Refer to the VEE Porting Guide > Graphics User Interface > C Module documentation to have more information about the
- * features of this C module, how to use it and how to configure it.
+ * features of this Abstraction Layer, how to use it and how to configure it.
  *
  * @author MicroEJ Developer Team
  */
@@ -32,13 +34,13 @@ extern "C" {
 // Cache Management Options
 // -----------------------------------------------------------------------------
 
-/*
+/**
  * @brief Value to disable the cache management
  * @see DRAWING_DMA2D_CACHE_MANAGEMENT
  */
 #define DRAWING_DMA2D_CACHE_MANAGEMENT_DISABLED (0U)
 
-/*
+/**
  * @brief Value to enable the cache management
  * @see DRAWING_DMA2D_CACHE_MANAGEMENT
  */
@@ -50,14 +52,14 @@ extern "C" {
 
 #if !defined(__DCACHE_PRESENT) || (__DCACHE_PRESENT == 0U)
 
-/*
+/**
  * @brief This MCU does not have or does not use a cache. Cache management in ui_drawing_dma2d.c is disabled.
  */
 #define DRAWING_DMA2D_CACHE_MANAGEMENT (DRAWING_DMA2D_CACHE_MANAGEMENT_DISABLED)
 
 #else // !defined (__DCACHE_PRESENT) || (__DCACHE_PRESENT == 0U)
 
-/*
+/**
  * @brief This MCU has a cache. Cache management must be configured.
  *
  * To ensure the best SDRAM performance, the SDRAM section must be configured as cacheable, write-through and shareable.
@@ -66,7 +68,7 @@ extern "C" {
  * transfer and cache invalidate after the transfer.
  */
 
-/*
+/**
  * @brief Cache management requirements are detailed in the following documents:
  * https://www.st.com/resource/en/application_note/an4838-introduction-to-memory-protection-unit-management-on-stm32-mcus-stmicroelectronics.pdf
  * https://www.st.com/resource/en/application_note/an4839-level-1-cache-on-stm32f7-series-and-stm32h7-series-stmicroelectronics.pdf
@@ -100,7 +102,7 @@ extern "C" {
  */
 //#define DRAWING_DMA2D_CACHE_MANAGEMENT (DRAWING_DMA2D_CACHE_MANAGEMENT_DISABLED)
 
-/*
+/**
  * @brief Cache management is required in the following cases:
  *
  * - MCU with cache (e.g. Cortex-M7) and the memory is configured as follows:

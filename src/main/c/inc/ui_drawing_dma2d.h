@@ -1,7 +1,7 @@
 /*
  * C
  *
- * Copyright 2019-2025 MicroEJ Corp.
+ * Copyright 2019-2026 MicroEJ Corp.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-/*
+/**
  * @file
  * @brief Implementation of a set of ui_drawing.h drawing functions (MicroUI library). These are
  * implementations over the STM32 DMA2D (ChromART) and the destination buffer format is the format
@@ -19,7 +19,7 @@ extern "C" {
  * implementation is used insted.
  *
  * @author MicroEJ Developer Team
- * @version 8.0.0
+ * @version 8.0.2
  */
 
 // --------------------------------------------------------------------------------
@@ -55,10 +55,12 @@ extern "C" {
  * DMA2D.
  */
 
+/** @cond */
 #define UI_DRAWING_DMA2D_fillRectangle UI_DRAWING_fillRectangle
 #define UI_DRAWING_DMA2D_drawImage UI_DRAWING_drawImage
 #define UI_DRAWING_DMA2D_copyImage UI_DRAWING_copyImage
 #define UI_DRAWING_DMA2D_drawRegion UI_DRAWING_drawRegion
+/** @endcond */
 
 #else // !defined(UI_GC_SUPPORTED_FORMATS) || (UI_GC_SUPPORTED_FORMATS <= 1)
 
@@ -68,10 +70,12 @@ extern "C" {
  * independently to use the DMA2D.
  */
 
+/** @cond */
 #define UI_DRAWING_DMA2D_fillRectangle UI_DRAWING_fillRectangle_0
 #define UI_DRAWING_DMA2D_drawImage UI_DRAWING_drawImage_0
 #define UI_DRAWING_DMA2D_copyImage UI_DRAWING_copyImage_0
 #define UI_DRAWING_DMA2D_drawRegion UI_DRAWING_drawRegion_0
+/** @endcond */
 
 #endif // !defined(UI_GC_SUPPORTED_FORMATS) || (UI_GC_SUPPORTED_FORMATS <= 1)
 
@@ -79,7 +83,7 @@ extern "C" {
 // Types
 // -----------------------------------------------------------------------------
 
-/*
+/**
  * @brief Feature "memcpy" data. The function "UI_DRAWING_DMA2D_configure_memcpy()" fills
  * it with the given arguments. In a second time, this structure must be given to
  * "UI_DRAWING_DMA2D_start_memcpy()".
@@ -95,7 +99,7 @@ typedef struct {
 // Public API
 // --------------------------------------------------------------------------------
 
-/*
+/**
  * @brief Initializes this library.
  *
  * @param[in] binary_semaphore_handle a binary semaphore. It must initialized in such
@@ -103,7 +107,7 @@ typedef struct {
  */
 void UI_DRAWING_DMA2D_initialize(void *binary_semaphore_handle);
 
-/*
+/**
  * @brief STM32 HAL DMA2D implementation. DMA2D IRQ handler must call this function.
  * This function calls the STM32 HAL DMA2D "HAL_DMA2D_IRQHandler()" function. Then it
  * calls the LLUI_DISPLAY "LLUI_DISPLAY_notifyAsynchronousDrawingEnd" or "LLUI_DISPLAY_flushDone"
@@ -111,8 +115,8 @@ void UI_DRAWING_DMA2D_initialize(void *binary_semaphore_handle);
  */
 void UI_DRAWING_DMA2D_IRQHandler(void);
 
-/*
- * @brief Configures the copy from a buffer to another buffer just.
+/**
+ * @brief Configures the copy from a buffer to another buffer.
  *
  * @param[in] srcAddr the address of the buffer to copy.
  * @param[in] destAddr the address of the destination buffer.
@@ -121,19 +125,19 @@ void UI_DRAWING_DMA2D_IRQHandler(void);
  * @param[in] xmax the bottom-right X coordinate of the rectangle to copy.
  * @param[in] ymax the bottom-right Y coordinate of the rectangle to copy.
  * @param[in] stride the buffer row stride in pixels (usually equal to the buffer width)
- * @param[in] memcpy_data the internal representation of the memcpy to perform.
+ * @param[out] memcpy_data the internal representation of the memcpy to perform.
  */
 void UI_DRAWING_DMA2D_configure_memcpy(uint8_t *srcAddr, uint8_t *destAddr, uint32_t xmin, uint32_t ymin, uint32_t xmax,
                                        uint32_t ymax, uint32_t stride, DRAWING_DMA2D_memcpy *memcpy_data);
 
-/*
- * @brief Starts the copy previously configured by a call to "DRAWING_DMA2D_configure_memcpy()".
+/**
+ * @brief Starts the copy previously configured by a call to "UI_DRAWING_DMA2D_configure_memcpy()".
  *
  * @param[in] memcpy_data the internal representation of the memcpy to perform.
  */
-void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy *memcyp_data);
+void UI_DRAWING_DMA2D_start_memcpy(DRAWING_DMA2D_memcpy *memcpy_data);
 
-/*
+/**
  * @brief Notifies the end of the copy (callback called by the the framework).
  *
  * The caller of memcpy should implement this function to be notified about the end of
@@ -148,25 +152,67 @@ void UI_DRAWING_DMA2D_memcpy_callback(bool from_isr);
 // (the function names differ according to the available number of destination formats)
 // --------------------------------------------------------------------------------
 
-/*
+/**
  * @brief Implementation of fillRectangle over the DMA2D. See ui_drawing.h
+ *
+ * @param[in] gc the MicroUI GraphicsContext target.
+ * @param[in] x1 the top-left pixel X coordinate.
+ * @param[in] y1 the top-left pixel Y coordinate.
+ * @param[in] x2 the bottom-right pixel X coordinate.
+ * @param[in] y2 the bottom-right pixel Y coordinate.
+ *
+ * @return the drawing status.
  */
 DRAWING_Status UI_DRAWING_DMA2D_fillRectangle(MICROUI_GraphicsContext *gc, jint x1, jint y1, jint x2, jint y2);
 
-/*
+/**
  * @brief Implementation of drawImage over the DMA2D. See ui_drawing.h
+ *
+ * @param[in] gc the MicroUI GraphicsContext target.
+ * @param[in] img the MicroUI Image to draw.
+ * @param[in] regionX the x coordinate of the upper-left corner of the region to copy.
+ * @param[in] regionY the y coordinate of the upper-left corner of the region to copy.
+ * @param[in] width the width of the region to copy.
+ * @param[in] height the height of the region to copy.
+ * @param[in] x the x coordinate of the top-left point in the destination.
+ * @param[in] y the y coordinate of the top-left point in the destination.
+ * @param[in] alpha the opacity level to apply to the region.
+ *
+ * @return the drawing status.
  */
 DRAWING_Status UI_DRAWING_DMA2D_drawImage(MICROUI_GraphicsContext *gc, MICROUI_Image *img, jint regionX, jint regionY,
                                           jint width, jint height, jint x, jint y, jint alpha);
 
-/*
+/**
  * @brief Implementation of copyImage over the DMA2D. See ui_drawing.h
+ *
+ * @param[in] gc the MicroUI GraphicsContext target.
+ * @param[in] img the MicroUI Image to copy.
+ * @param[in] regionX the x coordinate of the upper-left corner of the region to copy.
+ * @param[in] regionY the y coordinate of the upper-left corner of the region to copy.
+ * @param[in] width the width of the region to copy.
+ * @param[in] height the height of the region to copy.
+ * @param[in] x the x coordinate of the top-left point in the destination.
+ * @param[in] y the y coordinate of the top-left point in the destination.
+ *
+ * @return the drawing status.
  */
 DRAWING_Status UI_DRAWING_DMA2D_copyImage(MICROUI_GraphicsContext *gc, MICROUI_Image *img, jint regionX, jint regionY,
                                           jint width, jint height, jint x, jint y);
 
-/*
+/**
  * @brief Implementation of drawRegion over the DMA2D. See ui_drawing.h
+ *
+ * @param[in] gc the MicroUI GraphicsContext source and target.
+ * @param[in] regionX the x coordinate of the upper-left corner of the region to copy.
+ * @param[in] regionY the y coordinate of the upper-left corner of the region to copy.
+ * @param[in] width the width of the region to copy.
+ * @param[in] height the height of the region to copy.
+ * @param[in] x the x coordinate of the top-left point in the destination.
+ * @param[in] y the y coordinate of the top-left point in the destination.
+ * @param[in] alpha the opacity level to apply to the region.
+ *
+ * @return the drawing status.
  */
 DRAWING_Status UI_DRAWING_DMA2D_drawRegion(MICROUI_GraphicsContext *gc, jint regionX, jint regionY, jint width,
                                            jint height, jint x, jint y, jint alpha);
